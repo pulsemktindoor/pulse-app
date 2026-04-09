@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck } from 'lucide-react'
-import { format, differenceInDays, parseISO, startOfMonth, getDate, getDaysInMonth } from 'date-fns'
+import { format, differenceInDays, parseISO, startOfMonth, subMonths, getDate, getDaysInMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -34,22 +34,23 @@ export default function Dashboard() {
   }, [])
 
   async function loadData() {
-    const mesAtualRef = format(startOfMonth(hoje), 'yyyy-MM-dd')
-    const [{ data: cliData }, { data: relPendentes }, { data: relMesAtual }] = await Promise.all([
+    // Busca relatórios do mês anterior em diante (o relatório de abril é enviado em abril, mas mes_referencia é março)
+    const mesAnteriorRef = format(startOfMonth(subMonths(hoje, 1)), 'yyyy-MM-dd')
+    const [{ data: cliData }, { data: relPendentes }, { data: relRecentes }] = await Promise.all([
       supabase.from('clientes').select('*').order('nome_empresa'),
       supabase
         .from('relatorios')
         .select('id, mes_referencia, enviado, cliente_id, clientes(nome_empresa, nome_responsavel, whatsapp)')
         .eq('enviado', false),
-      // Todos os relatórios do mês atual (incluindo enviados) para checar alertas corretamente
+      // Relatórios do mês anterior em diante — cobre tanto quem usa mês atual quanto mês anterior como referência
       supabase
         .from('relatorios')
         .select('id, cliente_id, mes_referencia, enviado')
-        .eq('mes_referencia', mesAtualRef),
+        .gte('mes_referencia', mesAnteriorRef),
     ])
     if (cliData) setClientes(cliData)
     if (relPendentes) setRelatoriosPendentes(relPendentes as RelatorioComCliente[])
-    if (relMesAtual) setRelatoriosMesAtual(relMesAtual)
+    if (relRecentes) setRelatoriosMesAtual(relRecentes)
     setLoading(false)
   }
 
