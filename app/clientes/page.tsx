@@ -15,7 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Search, Phone, Monitor, CalendarDays, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Phone, Monitor, CalendarDays, Pencil, Trash2, User } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { format, parseISO, differenceInDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -370,8 +371,13 @@ export default function ClientesPage() {
                   <StatusContrato dataFim={c.data_fim_contrato} />
                 </div>
                 <div className="flex gap-2 pt-1">
-                  <Button size="sm" variant="outline" className="flex-1 text-xs h-8" onClick={() => abrirEdicao(c)}>
-                    <Pencil className="w-3 h-3 mr-1" /> Editar
+                  <Link href={`/clientes/${c.id}`} className="flex-1">
+                    <Button size="sm" variant="outline" className="w-full text-xs h-8 text-purple-700 border-purple-200 hover:bg-purple-50">
+                      <User className="w-3 h-3 mr-1" /> Ver perfil
+                    </Button>
+                  </Link>
+                  <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => abrirEdicao(c)}>
+                    <Pencil className="w-3 h-3" />
                   </Button>
                   <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8" onClick={() => excluirCliente(c.id, c.nome_empresa)}>
                     <Trash2 className="w-3 h-3" />
