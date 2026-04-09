@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, TrendingUp, Sparkles, CalendarDays, Handshake, Tv } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, Users, TrendingUp, Sparkles, CalendarDays, Handshake, Tv, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,6 +18,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
     <aside className="hidden md:flex w-64 min-h-screen bg-zinc-900 flex-col">
@@ -57,7 +65,14 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-zinc-800">
+      <div className="px-6 py-4 border-t border-zinc-800 space-y-3">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-zinc-400 hover:text-white text-xs transition-colors w-full"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Sair
+        </button>
         <p className="text-zinc-500 text-xs">© 2025 Pulse</p>
       </div>
     </aside>
