@@ -23,6 +23,7 @@ type RelatorioComCliente = {
 export default function Dashboard() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [relatoriosPendentes, setRelatoriosPendentes] = useState<RelatorioComCliente[]>([])
+  const [relatoriosMesAtual, setRelatoriosMesAtual] = useState<{ id: string; cliente_id: string; mes_referencia: string; enviado: boolean }[]>([])
   const [loading, setLoading] = useState(true)
 
   const hoje = new Date()
@@ -33,15 +34,22 @@ export default function Dashboard() {
   }, [])
 
   async function loadData() {
-    const [{ data: cliData }, { data: relData }] = await Promise.all([
+    const mesAtualRef = format(startOfMonth(hoje), 'yyyy-MM-dd')
+    const [{ data: cliData }, { data: relPendentes }, { data: relMesAtual }] = await Promise.all([
       supabase.from('clientes').select('*').order('nome_empresa'),
       supabase
         .from('relatorios')
         .select('id, mes_referencia, enviado, cliente_id, clientes(nome_empresa, nome_responsavel, whatsapp)')
         .eq('enviado', false),
+      // Todos os relatórios do mês atual (incluindo enviados) para checar alertas corretamente
+      supabase
+        .from('relatorios')
+        .select('id, cliente_id, mes_referencia, enviado')
+        .eq('mes_referencia', mesAtualRef),
     ])
     if (cliData) setClientes(cliData)
-    if (relData) setRelatoriosPendentes(relData as RelatorioComCliente[])
+    if (relPendentes) setRelatoriosPendentes(relPendentes as RelatorioComCliente[])
+    if (relMesAtual) setRelatoriosMesAtual(relMesAtual)
     setLoading(false)
   }
 
@@ -78,11 +86,9 @@ export default function Dashboard() {
     if (c.data_inicio_contrato && parseISO(c.data_inicio_contrato) >= mesAtualInicio) return false
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
-    // Verifica se já existe relatório enviado para este mês
-    const jaEnviado = relatoriosPendentes.some(
-      (r) => r.cliente_id === c.id && r.mes_referencia >= format(mesAtualInicio, 'yyyy-MM-dd')
-    )
-    return !jaEnviado
+    // Verifica se já existe algum relatório (enviado ou não) para este mês
+    const jaTemRelatorio = relatoriosMesAtual.some((r) => r.cliente_id === c.id)
+    return !jaTemRelatorio
   })
 
   // Próximos relatórios a vencer (nos próximos 7 dias)

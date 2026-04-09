@@ -106,7 +106,7 @@ export default function RelatoriosPage() {
       ? relatorio.total_exibicoes.toLocaleString('pt-BR')
       : '--'
     const msg = encodeURIComponent(
-      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\n\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
+      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
     )
     window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank')
 

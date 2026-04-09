@@ -63,7 +63,7 @@ export default function ClientePerfilPage() {
     const primeiroNome = cliente.nome_responsavel.split(' ')[0]
     const exibicoes = rel.total_exibicoes != null ? rel.total_exibicoes.toLocaleString('pt-BR') : '--'
     const msg = encodeURIComponent(
-      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\n\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
+      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
     )
     window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank')
     const { error } = await supabase
