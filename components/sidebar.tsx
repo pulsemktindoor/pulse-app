@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, TrendingUp, Sparkles, CalendarDays } from 'lucide-react'
+import { LayoutDashboard, Users, TrendingUp, Sparkles, CalendarDays, Handshake, Tv } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -11,6 +11,8 @@ const navItems = [
   { href: '/relatorios', label: 'Relatórios', icon: TrendingUp },
   { href: '/relatorios/gerar', label: 'Gerar Relatório', icon: Sparkles },
   { href: '/calendario', label: 'Calendário', icon: CalendarDays },
+  { href: '/parceiros', label: 'Parceiros', icon: Handshake },
+  { href: '/tv-corporativa', label: 'TV Corporativa', icon: Tv },
 ]
 
 export function Sidebar() {

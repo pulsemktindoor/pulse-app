@@ -35,11 +35,9 @@ function nomeLimpoTela(nomePdf: string): string {
 
 // Locais com acordo de parceria (não são clientes pagantes)
 const LOCAIS_PARCEIROS = [
-  "Quality Body 1",
-  "Quality Body 2",
+  "Bistrô Pai D'égua",
+  "Quality Body",
   "SB Carnes",
-  "Bistrô PaiD'égua 1",
-  "Bistrô PaiD'égua 2",
 ]
 
 type TelaDado = { nome: string; total: number; dailyValues: number[] }
