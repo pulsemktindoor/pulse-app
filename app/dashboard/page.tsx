@@ -22,8 +22,9 @@ type RelatorioComCliente = {
 
 export default function Dashboard() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [tvCorporativa, setTvCorporativa] = useState<{ valor_mensal: number }[]>([])
   const [relatoriosPendentes, setRelatoriosPendentes] = useState<RelatorioComCliente[]>([])
-  const [relatoriosMesAtual, setRelatoriosMesAtual] = useState<{ id: string; cliente_id: string; mes_referencia: string; enviado: boolean }[]>([])
+  const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; mes_referencia: string; enviado: boolean; created_at: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   const hoje = new Date()
@@ -34,23 +35,25 @@ export default function Dashboard() {
   }, [])
 
   async function loadData() {
-    // Busca relatórios do mês anterior em diante (o relatório de abril é enviado em abril, mas mes_referencia é março)
-    const mesAnteriorRef = format(startOfMonth(subMonths(hoje, 1)), 'yyyy-MM-dd')
-    const [{ data: cliData }, { data: relPendentes }, { data: relRecentes }] = await Promise.all([
+    // Cutoff: relatórios criados ou com mes_referencia nos últimos 60 dias contam como "já enviados este ciclo"
+    const cutoff = format(startOfMonth(subMonths(hoje, 1)), 'yyyy-MM-dd')
+    const [{ data: cliData }, { data: tvData }, { data: relPendentes }, { data: relRecentes }] = await Promise.all([
       supabase.from('clientes').select('*').order('nome_empresa'),
+      supabase.from('tv_corporativa').select('valor_mensal'),
       supabase
         .from('relatorios')
         .select('id, mes_referencia, enviado, cliente_id, clientes(nome_empresa, nome_responsavel, whatsapp)')
         .eq('enviado', false),
-      // Relatórios do mês anterior em diante — cobre tanto quem usa mês atual quanto mês anterior como referência
+      // Todos os relatórios (enviados ou não) criados desde o mês anterior — mais confiável do que filtrar por mes_referencia
       supabase
         .from('relatorios')
-        .select('id, cliente_id, mes_referencia, enviado')
-        .gte('mes_referencia', mesAnteriorRef),
+        .select('id, cliente_id, mes_referencia, enviado, created_at')
+        .gte('created_at', cutoff + 'T00:00:00'),
     ])
     if (cliData) setClientes(cliData)
+    if (tvData) setTvCorporativa(tvData)
     if (relPendentes) setRelatoriosPendentes(relPendentes as RelatorioComCliente[])
-    if (relRecentes) setRelatoriosMesAtual(relRecentes)
+    if (relRecentes) setRelatoriosRecentes(relRecentes)
     setLoading(false)
   }
 
@@ -87,8 +90,8 @@ export default function Dashboard() {
     if (c.data_inicio_contrato && parseISO(c.data_inicio_contrato) >= mesAtualInicio) return false
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
-    // Verifica se já existe algum relatório (enviado ou não) para este mês
-    const jaTemRelatorio = relatoriosMesAtual.some((r) => r.cliente_id === c.id)
+    // Verifica se já existe algum relatório criado recentemente para este cliente
+    const jaTemRelatorio = relatoriosRecentes.some((r) => r.cliente_id === c.id)
     return !jaTemRelatorio
   })
 
@@ -101,6 +104,7 @@ export default function Dashboard() {
     .sort((a, b) => (a.dia_envio_relatorio ?? 0) - (b.dia_envio_relatorio ?? 0))
 
   const receitaMensal = clientes.reduce((acc, c) => acc + (c.valor_mensal || 0), 0)
+    + tvCorporativa.reduce((acc, tv) => acc + (tv.valor_mensal || 0), 0)
 
   if (loading) {
     return (
