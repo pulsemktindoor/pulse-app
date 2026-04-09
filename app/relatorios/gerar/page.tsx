@@ -199,13 +199,18 @@ export default function GerarRelatorioPage() {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [parceiros, setParceiros] = useState<{ id: string; nome_local: string }[]>([])
   const [vinculo, setVinculo] = useState('')
   const [salvando, setSalvando] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    supabase.from('clientes').select('id, nome_empresa').order('nome_empresa').then(({ data }) => {
-      if (data) setClientes(data as Cliente[])
+    Promise.all([
+      supabase.from('clientes').select('id, nome_empresa').order('nome_empresa'),
+      supabase.from('parceiros').select('id, nome_local').order('nome_local'),
+    ]).then(([{ data: cliData }, { data: parData }]) => {
+      if (cliData) setClientes(cliData as Cliente[])
+      if (parData) setParceiros(parData)
     })
   }, [])
 
@@ -226,19 +231,16 @@ export default function GerarRelatorioPage() {
   }
 
   async function salvarRelatorio() {
-    if (!vinculo) {
-      toast.error('Selecione o cliente antes de salvar')
-      return
-    }
-    if (vinculo.startsWith('parceiro:')) {
-      toast.info('Locais parceiros não são registrados no sistema — só imprima o relatório.')
-      return
-    }
+    if (!vinculo) { toast.error('Selecione o cliente ou parceiro antes de salvar'); return }
     if (!dados) return
     setSalvando(true)
     const mesRef = format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd')
+    const isParceiro = vinculo.startsWith('parceiro:')
+    const parceiroId = isParceiro ? vinculo.replace('parceiro:', '') : null
+    const clienteId = isParceiro ? null : vinculo
     const { error } = await supabase.from('relatorios').insert({
-      cliente_id: vinculo,
+      cliente_id: clienteId,
+      parceiro_id: parceiroId,
       mes_referencia: mesRef,
       total_exibicoes: dados.totalPeriodo,
       media_diaria: dados.mediaDiaria,
@@ -330,30 +332,28 @@ export default function GerarRelatorioPage() {
                         </>
                       )}
                       {/* Locais parceiros */}
-                      <div className="px-2 py-1.5 mt-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide border-t border-zinc-100">
-                        Locais parceiros
-                      </div>
-                      {LOCAIS_PARCEIROS.map(l => (
-                        <SelectItem key={l} value={`parceiro:${l}`}>{l}</SelectItem>
-                      ))}
+                      {parceiros.length > 0 && (
+                        <>
+                          <div className="px-2 py-1.5 mt-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide border-t border-zinc-100">
+                            Locais parceiros
+                          </div>
+                          {parceiros.map(p => (
+                            <SelectItem key={p.id} value={`parceiro:${p.id}`}>{p.nome_local}</SelectItem>
+                          ))}
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
                 <Button
                   onClick={salvarRelatorio}
-                  disabled={salvando || isParceiro}
+                  disabled={salvando}
                   variant="outline"
-                  title={isParceiro ? 'Locais parceiros não são registrados no sistema' : undefined}
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {salvando ? 'Salvando...' : 'Salvar no sistema'}
                 </Button>
               </div>
-              {isParceiro && (
-                <p className="text-xs text-zinc-400">
-                  Locais parceiros não são registrados no sistema — imprima o relatório para enviar.
-                </p>
-              )}
             </div>
           </div>
         )}
