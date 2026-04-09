@@ -72,6 +72,10 @@ export default function Dashboard() {
   const mesAtualInicio = startOfMonth(hoje)
   const clientesComRelatorioHoje = clientes.filter((c) => {
     if (!c.dia_envio_relatorio) return false
+    // Ignora clientes com contrato encerrado
+    if (c.data_fim_contrato && differenceInDays(parseISO(c.data_fim_contrato), hoje) < 0) return false
+    // Ignora clientes que começaram este mês (primeiro relatório é no mês seguinte)
+    if (c.data_inicio_contrato && parseISO(c.data_inicio_contrato) >= mesAtualInicio) return false
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
     // Verifica se já existe relatório enviado para este mês

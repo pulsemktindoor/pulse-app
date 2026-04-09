@@ -52,6 +52,13 @@ export default function CalendarioPage() {
     clientes.forEach((c) => {
       // Dia de envio do relatório
       if (c.dia_envio_relatorio) {
+        // Ignora clientes com contrato encerrado antes deste mês
+        const fimContrato = c.data_fim_contrato ? parseISO(c.data_fim_contrato) : null
+        if (fimContrato && fimContrato < startOfMonth(mesAtual)) return
+        // Ignora clientes que começaram este mês (primeiro relatório é no mês seguinte)
+        const inicioContrato = c.data_inicio_contrato ? parseISO(c.data_inicio_contrato) : null
+        if (inicioContrato && inicioContrato >= startOfMonth(mesAtual)) return
+
         const dia = c.dia_envio_relatorio
         // Verifica se já foi enviado neste mês
         const mesRef = `${ano}-${String(mes).padStart(2, '0')}-01`
@@ -250,6 +257,10 @@ export default function CalendarioPage() {
                 const relMes = relatorios.find((r) => r.cliente_id === c.id && r.mes_referencia === mesRef)
 
                 if (!diaRel) return null
+                // Oculta clientes com contrato encerrado antes deste mês
+                if (c.data_fim_contrato && parseISO(c.data_fim_contrato) < startOfMonth(mesAtual)) return null
+                // Oculta clientes que começaram este mês
+                if (c.data_inicio_contrato && parseISO(c.data_inicio_contrato) >= startOfMonth(mesAtual)) return null
                 return (
                   <div key={c.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-zinc-100">
                     <div>
