@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Cliente } from '@/lib/supabase/types'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Select,
@@ -22,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Check, FileText, Send } from 'lucide-react'
+import { Plus, Check, FileText, Send, Trash2 } from 'lucide-react'
 import { format, parseISO, startOfMonth, subMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -52,9 +51,7 @@ export default function RelatoriosPage() {
     media_diaria: '',
   })
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  useEffect(() => { loadData() }, [])
 
   async function loadData() {
     const [{ data: relData }, { data: cliData }] = await Promise.all([
@@ -70,10 +67,7 @@ export default function RelatoriosPage() {
   }
 
   async function salvarRelatorio() {
-    if (!form.cliente_id) {
-      toast.error('Selecione o cliente')
-      return
-    }
+    if (!form.cliente_id) { toast.error('Selecione o cliente'); return }
     setSalvando(true)
     const { error } = await supabase.from('relatorios').insert({
       cliente_id: form.cliente_id,
@@ -93,34 +87,56 @@ export default function RelatoriosPage() {
     setSalvando(false)
   }
 
-  async function marcarEnviado(id: string) {
+  function saudacao() {
+    const h = new Date().getHours()
+    if (h < 12) return 'Bom dia'
+    if (h < 18) return 'Boa tarde'
+    return 'Boa noite'
+  }
+
+  // Abre WhatsApp com mensagem pronta e marca como enviado
+  async function enviarViaWhatsApp(relatorio: RelatorioComCliente) {
+    if (!relatorio.clientes?.whatsapp) {
+      toast.error('Cliente sem WhatsApp cadastrado')
+      return
+    }
+    const numero = relatorio.clientes.whatsapp.replace(/\D/g, '')
+    const primeiroNome = relatorio.clientes.nome_responsavel.split(' ')[0]
+    const exibicoes = relatorio.total_exibicoes != null
+      ? relatorio.total_exibicoes.toLocaleString('pt-BR')
+      : '--'
+    const msg = encodeURIComponent(
+      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\n\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
+    )
+    window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank')
+
+    // Marca como enviado automaticamente
     const { error } = await supabase
       .from('relatorios')
       .update({ enviado: true, data_envio: new Date().toISOString() })
-      .eq('id', id)
-    if (error) {
-      toast.error('Erro ao atualizar')
-    } else {
-      toast.success('Marcado como enviado!')
+      .eq('id', relatorio.id)
+    if (!error) {
+      toast.success('Relatório marcado como enviado!')
       loadData()
     }
   }
 
-  function abrirWhatsApp(relatorio: RelatorioComCliente) {
-    if (!relatorio.clientes?.whatsapp) return
-    const numero = relatorio.clientes.whatsapp.replace(/\D/g, '')
-    const mes = format(parseISO(relatorio.mes_referencia), 'MMMM/yyyy', { locale: ptBR })
-    const msg = encodeURIComponent(
-      `Olá ${relatorio.clientes.nome_responsavel}! 😊\n\nSegue o relatório de ${mes} da ${relatorio.clientes.nome_empresa} na Pulse Marketing Indoor.\n\n📊 Total de exibições: ${relatorio.total_exibicoes ?? '--'}\n📈 Média diária: ${relatorio.media_diaria ?? '--'}\n\nQualquer dúvida, estou à disposição!`
-    )
-    window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank')
+  async function excluirRelatorio(id: string) {
+    if (!confirm('Excluir este relatório?')) return
+    const { error } = await supabase.from('relatorios').delete().eq('id', id)
+    if (error) {
+      toast.error('Erro ao excluir')
+    } else {
+      toast.success('Relatório excluído')
+      loadData()
+    }
   }
 
   const pendentes = relatorios.filter((r) => !r.enviado)
   const enviados = relatorios.filter((r) => r.enviado)
 
   return (
-    <div className="p-8">
+    <div className="p-6 md:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">Relatórios</h1>
@@ -130,7 +146,7 @@ export default function RelatoriosPage() {
         </div>
         <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Novo relatório
+          Novo
         </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-w-md">
@@ -140,15 +156,11 @@ export default function RelatoriosPage() {
             <div className="space-y-4 mt-2">
               <div className="space-y-1">
                 <Label>Cliente *</Label>
-                <Select onValueChange={(v) => setForm({ ...form, cliente_id: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o cliente" />
-                  </SelectTrigger>
+                <Select onValueChange={(v) => setForm({ ...form, cliente_id: v as string })}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
                   <SelectContent>
                     {clientes.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.nome_empresa}
-                      </SelectItem>
+                      <SelectItem key={c.id} value={c.id}>{c.nome_empresa}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -164,21 +176,13 @@ export default function RelatoriosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label>Total de exibições</Label>
-                  <Input
-                    type="number"
-                    placeholder="Ex: 4800"
-                    value={form.total_exibicoes}
-                    onChange={(e) => setForm({ ...form, total_exibicoes: e.target.value })}
-                  />
+                  <Input type="number" placeholder="Ex: 4800" value={form.total_exibicoes}
+                    onChange={(e) => setForm({ ...form, total_exibicoes: e.target.value })} />
                 </div>
                 <div className="space-y-1">
                   <Label>Média diária</Label>
-                  <Input
-                    type="number"
-                    placeholder="Ex: 160"
-                    value={form.media_diaria}
-                    onChange={(e) => setForm({ ...form, media_diaria: e.target.value })}
-                  />
+                  <Input type="number" placeholder="Ex: 160" value={form.media_diaria}
+                    onChange={(e) => setForm({ ...form, media_diaria: e.target.value })} />
                 </div>
               </div>
               <Button onClick={salvarRelatorio} disabled={salvando} className="w-full bg-purple-600 hover:bg-purple-700">
@@ -199,15 +203,15 @@ export default function RelatoriosPage() {
               <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">Pendentes de envio</h2>
               <div className="space-y-3">
                 {pendentes.map((r) => (
-                  <Card key={r.id} className="border-red-200">
+                  <Card key={r.id} className="border-orange-200">
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <p className="font-semibold text-zinc-900">{r.clientes?.nome_empresa}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-zinc-900 truncate">{r.clientes?.nome_empresa}</p>
                           <p className="text-sm text-zinc-500">
                             {format(parseISO(r.mes_referencia), 'MMMM/yyyy', { locale: ptBR })}
                           </p>
-                          <div className="mt-2 flex gap-4 text-sm text-zinc-600">
+                          <div className="mt-1 flex gap-4 text-sm text-zinc-600">
                             {r.total_exibicoes != null && (
                               <span><span className="text-zinc-400">Exibições:</span> {r.total_exibicoes.toLocaleString('pt-BR')}</span>
                             )}
@@ -219,20 +223,19 @@ export default function RelatoriosPage() {
                         <div className="flex items-center gap-2 shrink-0">
                           <Button
                             size="sm"
-                            variant="outline"
-                            onClick={() => abrirWhatsApp(r)}
-                            className="text-green-700 border-green-200 hover:bg-green-50"
+                            onClick={() => enviarViaWhatsApp(r)}
+                            className="bg-green-600 hover:bg-green-700 text-white"
                           >
                             <Send className="w-3.5 h-3.5 mr-1.5" />
-                            WhatsApp
+                            Enviar
                           </Button>
                           <Button
                             size="sm"
-                            onClick={() => marcarEnviado(r.id)}
-                            className="bg-purple-600 hover:bg-purple-700"
+                            variant="outline"
+                            className="text-red-500 border-red-200 hover:bg-red-50 px-2"
+                            onClick={() => excluirRelatorio(r.id)}
                           >
-                            <Check className="w-3.5 h-3.5 mr-1.5" />
-                            Enviado
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
                       </div>
@@ -259,9 +262,24 @@ export default function RelatoriosPage() {
                             {r.data_envio && ` · enviado em ${format(parseISO(r.data_envio), 'dd/MM/yyyy')}`}
                           </p>
                         </div>
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                          <Check className="w-3 h-3 mr-1" /> Enviado
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => enviarViaWhatsApp(r)}
+                            variant="outline"
+                            className="text-green-700 border-green-300 hover:bg-green-50 h-7 text-xs"
+                          >
+                            <Send className="w-3 h-3 mr-1" /> Reenviar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-500 border-red-200 hover:bg-red-50 px-2 h-7"
+                            onClick={() => excluirRelatorio(r.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

@@ -50,14 +50,20 @@ export default function ClientePerfilPage() {
     setLoading(false)
   }
 
+  function saudacao() {
+    const h = new Date().getHours()
+    if (h < 12) return 'Bom dia'
+    if (h < 18) return 'Boa tarde'
+    return 'Boa noite'
+  }
+
   async function enviarWhatsApp(rel: Relatorio) {
     if (!cliente?.whatsapp) { toast.error('Cliente sem WhatsApp'); return }
     const numero = cliente.whatsapp.replace(/\D/g, '')
-    const mes = format(parseISO(rel.mes_referencia), 'MMMM/yyyy', { locale: ptBR })
+    const primeiroNome = cliente.nome_responsavel.split(' ')[0]
     const exibicoes = rel.total_exibicoes != null ? rel.total_exibicoes.toLocaleString('pt-BR') : '--'
-    const media = rel.media_diaria != null ? rel.media_diaria.toLocaleString('pt-BR') : '--'
     const msg = encodeURIComponent(
-      `Olá ${cliente.nome_responsavel}! 😊\n\nSegue o relatório de ${mes} da ${cliente.nome_empresa} na Pulse Marketing Indoor.\n\n📊 Total de exibições: ${exibicoes}\n📈 Média diária: ${media}\n\nQualquer dúvida, estou à disposição!`
+      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\n\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
     )
     window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank')
     const { error } = await supabase
@@ -261,9 +267,14 @@ export default function ClientePerfilPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {r.enviado ? (
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100 text-xs">
-                          <Check className="w-3 h-3 mr-1" /> Enviado
-                        </Badge>
+                        <Button
+                          size="sm"
+                          onClick={() => enviarWhatsApp(r)}
+                          variant="outline"
+                          className="text-green-700 border-green-300 hover:bg-green-50 h-7 text-xs"
+                        >
+                          <Send className="w-3 h-3 mr-1" /> Reenviar
+                        </Button>
                       ) : (
                         <Button
                           size="sm"
