@@ -9,6 +9,15 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Pulse Marketing Indoor',
   description: 'Gestão de clientes e contratos',
+  icons: {
+    apple: '/pulse-logo.png',
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Pulse',
+  },
 }
 
 export default function RootLayout({

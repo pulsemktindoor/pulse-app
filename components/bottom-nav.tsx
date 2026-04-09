@@ -34,7 +34,7 @@ export function BottomNav() {
             )}
           >
             <Icon className={cn('w-5 h-5', active && 'text-purple-400')} />
-            <span>{item.label}</span>
+            <span className="whitespace-nowrap text-center">{item.label}</span>
           </Link>
         )
       })}
