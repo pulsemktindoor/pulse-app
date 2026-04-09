@@ -53,9 +53,6 @@ export default function Dashboard() {
     if (tvData) setTvCorporativa(tvData)
     if (relPendentes) setRelatoriosPendentes(relPendentes as RelatorioComCliente[])
     if (todosRels) setRelatoriosRecentes(todosRels)
-    // DEBUG temporário — remover depois
-    console.log('[DEBUG] todosRels:', todosRels)
-    console.log('[DEBUG] relPendentes:', relPendentes)
     setLoading(false)
   }
 
