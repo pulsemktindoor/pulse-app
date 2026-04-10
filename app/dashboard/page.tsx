@@ -6,7 +6,7 @@ import { Cliente } from '@/lib/supabase/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck } from 'lucide-react'
+import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake } from 'lucide-react'
 import { format, differenceInDays, parseISO, startOfMonth, subMonths, getDate, getDaysInMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
@@ -20,11 +20,20 @@ type RelatorioComCliente = {
   clientes: { nome_empresa: string; nome_responsavel: string; whatsapp: string } | null
 }
 
+type ParceiroSimples = {
+  id: string
+  nome_local: string
+  dia_envio_relatorio: number | null
+  data_inicio: string | null
+  data_fim_contrato: string | null
+}
+
 export default function Dashboard() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [parceiros, setParceiros] = useState<ParceiroSimples[]>([])
   const [tvCorporativa, setTvCorporativa] = useState<{ valor_mensal: number }[]>([])
   const [relatoriosPendentes, setRelatoriosPendentes] = useState<RelatorioComCliente[]>([])
-  const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; mes_referencia: string; created_at: string }[]>([])
+  const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; parceiro_id: string | null; mes_referencia: string; created_at: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   const hoje = new Date()
@@ -36,20 +45,21 @@ export default function Dashboard() {
 
   async function loadData() {
     // Carrega clientes e relatórios em paralelo; tv_corporativa separado para não contaminar os outros se falhar
-    const [{ data: cliData }, { data: relPendentes }, { data: todosRels }] = await Promise.all([
+    const [{ data: cliData }, { data: parData }, { data: relPendentes }, { data: todosRels }] = await Promise.all([
       supabase.from('clientes').select('*').order('nome_empresa'),
+      supabase.from('parceiros').select('id, nome_local, dia_envio_relatorio, data_inicio, data_fim_contrato').order('nome_local'),
       supabase
         .from('relatorios')
         .select('id, mes_referencia, enviado, cliente_id, clientes(nome_empresa, nome_responsavel, whatsapp)')
         .eq('enviado', false),
-      // Carrega todos os relatorios — filtramos no cliente para evitar problemas com formatos de data
-      supabase.from('relatorios').select('id, cliente_id, mes_referencia, created_at'),
+      supabase.from('relatorios').select('id, cliente_id, parceiro_id, mes_referencia, created_at'),
     ])
 
     // TV corporativa separado: não deixa quebrar as queries principais se a tabela ainda não existir
     const { data: tvData } = await supabase.from('tv_corporativa').select('valor_mensal')
 
     if (cliData) setClientes(cliData)
+    if (parData) setParceiros(parData)
     if (tvData) setTvCorporativa(tvData)
     if (relPendentes) setRelatoriosPendentes(relPendentes as RelatorioComCliente[])
     if (todosRels) setRelatoriosRecentes(todosRels)
@@ -100,11 +110,35 @@ export default function Dashboard() {
     return !jaTemRelatorio
   })
 
-  // Próximos relatórios a vencer (nos próximos 7 dias)
+  // Parceiros cujo dia de relatório já passou este mês mas ainda não foi gerado
+  const parceirosComRelatorioHoje = parceiros.filter((p) => {
+    if (!p.dia_envio_relatorio) return false
+    if (p.data_fim_contrato && differenceInDays(parseISO(p.data_fim_contrato), hoje) < 0) return false
+    if (p.data_inicio && parseISO(p.data_inicio) >= mesAtualInicio) return false
+    if (diaHoje < p.dia_envio_relatorio) return false
+    const cutoff = subMonths(mesAtualInicio, 1)
+    const jaTemRelatorio = relatoriosRecentes.some((r) => {
+      if (r.parceiro_id !== p.id) return false
+      const porMes = r.mes_referencia && parseISO(r.mes_referencia) >= cutoff
+      const porCriacao = r.created_at && new Date(r.created_at) >= cutoff
+      return porMes || porCriacao
+    })
+    return !jaTemRelatorio
+  })
+
+  // Próximos relatórios a vencer (nos próximos 7 dias) — clientes
   const proximosRelatorios = clientes
     .filter((c) => {
       if (!c.dia_envio_relatorio) return false
       return c.dia_envio_relatorio > diaHoje && c.dia_envio_relatorio <= diaHoje + 7
+    })
+    .sort((a, b) => (a.dia_envio_relatorio ?? 0) - (b.dia_envio_relatorio ?? 0))
+
+  // Próximos relatórios a vencer (nos próximos 7 dias) — parceiros
+  const proximosParceiros = parceiros
+    .filter((p) => {
+      if (!p.dia_envio_relatorio) return false
+      return p.dia_envio_relatorio > diaHoje && p.dia_envio_relatorio <= diaHoje + 7
     })
     .sort((a, b) => (a.dia_envio_relatorio ?? 0) - (b.dia_envio_relatorio ?? 0))
 
@@ -130,7 +164,7 @@ export default function Dashboard() {
       </div>
 
       {/* Alertas do dia — destaque */}
-      {(clientesComRelatorioHoje.length > 0 || contratosAlerta.filter(c => c.dias <= 0).length > 0) && (
+      {(clientesComRelatorioHoje.length > 0 || parceirosComRelatorioHoje.length > 0 || contratosAlerta.filter(c => c.dias <= 0).length > 0) && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <Bell className="w-4 h-4 text-red-600" />
@@ -147,6 +181,23 @@ export default function Dashboard() {
                   <Button size="sm" className="bg-red-600 hover:bg-red-700 text-xs">
                     <Send className="w-3 h-3 mr-1" />
                     Enviar
+                  </Button>
+                </Link>
+              </div>
+            ))}
+            {parceirosComRelatorioHoje.map((p) => (
+              <div key={p.id} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-100">
+                <div className="flex items-center gap-2">
+                  <Handshake className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-zinc-900">{p.nome_local}</p>
+                    <p className="text-xs text-zinc-500">Gerar relatório do parceiro</p>
+                  </div>
+                </div>
+                <Link href="/relatorios/gerar">
+                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-xs">
+                    <FileText className="w-3 h-3 mr-1" />
+                    Gerar
                   </Button>
                 </Link>
               </div>
@@ -289,6 +340,22 @@ export default function Dashboard() {
                     </div>
                     <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
                       em {(c.dia_envio_relatorio ?? 0) - diaHoje}d
+                    </Badge>
+                  </div>
+                ))}
+                {proximosParceiros.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-zinc-100 last:border-0">
+                    <div className="flex items-center gap-1.5">
+                      <Handshake className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-zinc-900">{p.nome_local}</p>
+                        <p className="text-xs text-zinc-500">
+                          Dia {p.dia_envio_relatorio} de {format(hoje, 'MMMM', { locale: ptBR })} · Parceiro
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
+                      em {(p.dia_envio_relatorio ?? 0) - diaHoje}d
                     </Badge>
                   </div>
                 ))}
