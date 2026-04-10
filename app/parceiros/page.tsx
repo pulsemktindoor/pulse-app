@@ -26,6 +26,7 @@ type Parceiro = {
   data_inicio: string | null
   data_fim_contrato: string | null
   observacoes: string | null
+  dia_envio_relatorio: number | null
   created_at: string
 }
 
@@ -36,6 +37,7 @@ const emptyForm = {
   data_inicio: '',
   data_fim_contrato: '',
   observacoes: '',
+  dia_envio_relatorio: '5',
 }
 
 function StatusContrato({ dataFim }: { dataFim: string | null }) {
@@ -75,6 +77,7 @@ export default function ParceirosPage() {
       data_inicio: form.data_inicio || null,
       data_fim_contrato: form.data_fim_contrato || null,
       observacoes: form.observacoes.trim() || null,
+      dia_envio_relatorio: parseInt(form.dia_envio_relatorio) || 5,
     }
     const { error } = editando
       ? await supabase.from('parceiros').update(payload).eq('id', editando.id)
@@ -104,6 +107,7 @@ export default function ParceirosPage() {
       data_inicio: p.data_inicio || '',
       data_fim_contrato: p.data_fim_contrato || '',
       observacoes: p.observacoes || '',
+      dia_envio_relatorio: String(p.dia_envio_relatorio || 5),
     })
     setDialogOpen(true)
   }
@@ -194,6 +198,9 @@ export default function ParceirosPage() {
                 {p.observacoes && (
                   <p className="text-xs text-zinc-400 italic">{p.observacoes}</p>
                 )}
+                {p.dia_envio_relatorio && (
+                  <p className="text-xs text-zinc-500">Relatório: dia <strong>{p.dia_envio_relatorio}</strong> de cada mês</p>
+                )}
                 <div className="flex gap-2 pt-2 border-t border-zinc-100">
                   <Button size="sm" variant="outline" className="flex-1 text-xs h-8" onClick={() => abrirEdicao(p)}>
                     <Pencil className="w-3 h-3 mr-1" /> Editar
@@ -248,6 +255,21 @@ export default function ParceirosPage() {
               <Label>Observações</Label>
               <Input placeholder="Ex: Exibição gratuita em troca de espaço nas telas" value={form.observacoes}
                 onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Dia do mês para enviar relatório</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={1}
+                  max={28}
+                  value={form.dia_envio_relatorio}
+                  onChange={(e) => setForm({ ...form, dia_envio_relatorio: e.target.value })}
+                  className="w-24"
+                />
+                <span className="text-sm text-zinc-500">de cada mês</span>
+              </div>
+              <p className="text-xs text-zinc-400">Ex: 5 = lembrete todo dia 5</p>
             </div>
             <Button onClick={salvar} disabled={salvando} className="w-full bg-purple-600 hover:bg-purple-700">
               {salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar parceiro'}

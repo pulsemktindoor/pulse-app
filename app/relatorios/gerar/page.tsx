@@ -5,9 +5,6 @@ import { supabase } from '@/lib/supabase/client'
 import { Cliente } from '@/lib/supabase/types'
 import { Button } from '@/components/ui/button'
 import { Upload, FileText, Printer, Monitor, Save } from 'lucide-react'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -194,6 +191,49 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
 
 const CORES = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626']
 
+// Gráfico SVG puro — escala 100% via viewBox, funciona perfeitamente no PDF
+function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number }> }) {
+  const W = 560, H = 200
+  const pL = 44, pR = 8, pT = 8, pB = 28
+  const cW = W - pL - pR
+  const cH = H - pT - pB
+  const maxVal = Math.max(...data.map(d => d.exibicoes), 1)
+  const roundTo = maxVal > 100 ? 50 : maxVal > 20 ? 10 : 5
+  const maxRounded = Math.ceil(maxVal / roundTo) * roundTo
+  const yTicks = [0, 1, 2, 3, 4].map(i => Math.round(maxRounded * i / 4))
+  const colW = cW / data.length
+  const barW = colW * 0.72
+  const labelInterval = Math.max(1, Math.floor(data.length / 8))
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+      {yTicks.map((tick, i) => {
+        const y = pT + cH - (tick / maxRounded) * cH
+        return (
+          <g key={i}>
+            <line x1={pL} y1={y} x2={W - pR} y2={y} stroke="#e5e7eb" strokeWidth="0.8" strokeDasharray="3,2" />
+            <text x={pL - 4} y={y + 3.5} textAnchor="end" fontSize="9" fill="#9ca3af">{tick}</text>
+          </g>
+        )
+      })}
+      {data.map((d, i) => {
+        const barH = (d.exibicoes / maxRounded) * cH
+        const x = pL + i * colW + (colW - barW) / 2
+        const y = pT + cH - barH
+        const showLabel = i % labelInterval === 0 || i === data.length - 1
+        return (
+          <g key={i}>
+            {barH > 0 && <rect x={x} y={y} width={barW} height={barH} fill="#7c3aed" rx="2" ry="2" />}
+            {showLabel && (
+              <text x={x + barW / 2} y={H - 4} textAnchor="middle" fontSize="8.5" fill="#9ca3af">{d.dia}</text>
+            )}
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
 export default function GerarRelatorioPage() {
   const [dados, setDados] = useState<DadosRelatorio | null>(null)
   const [loading, setLoading] = useState(false)
@@ -256,10 +296,13 @@ export default function GerarRelatorioPage() {
 
   const isParceiro = vinculo.startsWith('parceiro:')
 
-  const dadosGrafico = dados?.totaisDiarios.map((v, i) => ({
+  const dadosGraficoCompleto = dados?.totaisDiarios.map((v, i) => ({
     dia: dados.datas[i] || `${i + 1}`,
     exibicoes: v,
   })) || []
+  // Remove os dias sem exibição no início do período para o gráfico não ficar vazio à esquerda
+  const primeiroComDados = dadosGraficoCompleto.findIndex(d => d.exibicoes > 0)
+  const dadosGrafico = primeiroComDados > 0 ? dadosGraficoCompleto.slice(primeiroComDados) : dadosGraficoCompleto
 
   return (
     <>
@@ -414,19 +457,8 @@ export default function GerarRelatorioPage() {
                     Total combinado de todas as telas · {dados.periodoLabel}
                   </p>
                 </div>
-                <div style={{ background: '#f9fafb', borderRadius: 16, padding: '24px 16px' }}>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={dadosGrafico} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="dia" tick={{ fontSize: 10, fill: '#9ca3af' }} interval={Math.floor(dadosGrafico.length / 10)} />
-                      <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} />
-                      <Tooltip
-                        contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                        formatter={(v) => [Number(v).toLocaleString('pt-BR'), 'Exibições no dia']}
-                      />
-                      <Bar dataKey="exibicoes" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div style={{ background: '#f9fafb', borderRadius: 16, padding: '20px 16px' }}>
+                  <GraficoBarras data={dadosGrafico} />
                 </div>
               </div>
             )}
