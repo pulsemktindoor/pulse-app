@@ -114,7 +114,6 @@ export default function Dashboard() {
   const parceirosComRelatorioHoje = parceiros.filter((p) => {
     if (!p.dia_envio_relatorio) return false
     if (p.data_fim_contrato && differenceInDays(parseISO(p.data_fim_contrato), hoje) < 0) return false
-    if (p.data_inicio && parseISO(p.data_inicio) >= mesAtualInicio) return false
     if (diaHoje < p.dia_envio_relatorio) return false
     const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
