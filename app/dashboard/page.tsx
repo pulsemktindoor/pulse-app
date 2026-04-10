@@ -6,7 +6,7 @@ import { Cliente } from '@/lib/supabase/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake } from 'lucide-react'
+import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User } from 'lucide-react'
 import { format, differenceInDays, parseISO, startOfMonth, subMonths, getDate, getDaysInMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
@@ -331,11 +331,14 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {proximosRelatorios.map((c) => (
                   <div key={c.id} className="flex items-center justify-between py-2 border-b border-zinc-100 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
-                      <p className="text-xs text-zinc-500">
-                        Dia {c.dia_envio_relatorio} de {format(hoje, 'MMMM', { locale: ptBR })}
-                      </p>
+                    <div className="flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
+                        <p className="text-xs text-zinc-500">
+                          Dia {c.dia_envio_relatorio} de {format(hoje, 'MMMM', { locale: ptBR })}
+                        </p>
+                      </div>
                     </div>
                     <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
                       em {(c.dia_envio_relatorio ?? 0) - diaHoje}d

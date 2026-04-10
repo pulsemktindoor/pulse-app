@@ -31,8 +31,9 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-6 border-b border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-            <TrendingUp className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/pulse-logo.png" alt="Pulse" className="w-full h-full object-cover" />
           </div>
           <div>
             <p className="text-white font-bold text-sm leading-none">Pulse</p>
