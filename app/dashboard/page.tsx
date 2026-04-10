@@ -125,21 +125,16 @@ export default function Dashboard() {
     return !jaTemRelatorio
   })
 
-  // Próximos relatórios a vencer (nos próximos 7 dias) — clientes
-  const proximosRelatorios = clientes
-    .filter((c) => {
-      if (!c.dia_envio_relatorio) return false
-      return c.dia_envio_relatorio > diaHoje && c.dia_envio_relatorio <= diaHoje + 7
-    })
-    .sort((a, b) => (a.dia_envio_relatorio ?? 0) - (b.dia_envio_relatorio ?? 0))
-
-  // Próximos relatórios a vencer (nos próximos 7 dias) — parceiros
-  const proximosParceiros = parceiros
-    .filter((p) => {
-      if (!p.dia_envio_relatorio) return false
-      return p.dia_envio_relatorio > diaHoje && p.dia_envio_relatorio <= diaHoje + 7
-    })
-    .sort((a, b) => (a.dia_envio_relatorio ?? 0) - (b.dia_envio_relatorio ?? 0))
+  // Próximos relatórios a vencer (nos próximos 7 dias) — clientes + parceiros mesclados e ordenados por dia
+  type ProximoItem = { id: string; nome: string; dia: number; tipo: 'cliente' | 'parceiro' }
+  const proximosItens: ProximoItem[] = [
+    ...clientes
+      .filter((c) => c.dia_envio_relatorio && c.dia_envio_relatorio > diaHoje && c.dia_envio_relatorio <= diaHoje + 7)
+      .map((c) => ({ id: c.id, nome: c.nome_empresa, dia: c.dia_envio_relatorio!, tipo: 'cliente' as const })),
+    ...parceiros
+      .filter((p) => p.dia_envio_relatorio && p.dia_envio_relatorio > diaHoje && p.dia_envio_relatorio <= diaHoje + 7)
+      .map((p) => ({ id: p.id, nome: p.nome_local, dia: p.dia_envio_relatorio!, tipo: 'parceiro' as const })),
+  ].sort((a, b) => a.dia - b.dia)
 
   const receitaMensal = clientes.reduce((acc, c) => acc + (c.valor_mensal || 0), 0)
     + tvCorporativa.reduce((acc, tv) => acc + (tv.valor_mensal || 0), 0)
@@ -325,39 +320,26 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {proximosRelatorios.length === 0 && relatoriosPendentes.length === 0 ? (
+            {proximosItens.length === 0 && relatoriosPendentes.length === 0 ? (
               <p className="text-zinc-400 text-sm">Nenhum relatório nos próximos 7 dias.</p>
             ) : (
               <div className="space-y-3">
-                {proximosRelatorios.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between py-2 border-b border-zinc-100 last:border-0">
+                {proximosItens.map((item) => (
+                  <div key={`${item.tipo}-${item.id}`} className="flex items-center justify-between py-2 border-b border-zinc-100 last:border-0">
                     <div className="flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                      {item.tipo === 'parceiro'
+                        ? <Handshake className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                        : <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />}
                       <div>
-                        <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
+                        <p className="text-sm font-medium text-zinc-900">{item.nome}</p>
                         <p className="text-xs text-zinc-500">
-                          Dia {c.dia_envio_relatorio} de {format(hoje, 'MMMM', { locale: ptBR })}
+                          Dia {item.dia} de {format(hoje, 'MMMM', { locale: ptBR })}
+                          {item.tipo === 'parceiro' && ' · Parceiro'}
                         </p>
                       </div>
                     </div>
                     <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                      em {(c.dia_envio_relatorio ?? 0) - diaHoje}d
-                    </Badge>
-                  </div>
-                ))}
-                {proximosParceiros.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-zinc-100 last:border-0">
-                    <div className="flex items-center gap-1.5">
-                      <Handshake className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-zinc-900">{p.nome_local}</p>
-                        <p className="text-xs text-zinc-500">
-                          Dia {p.dia_envio_relatorio} de {format(hoje, 'MMMM', { locale: ptBR })} · Parceiro
-                        </p>
-                      </div>
-                    </div>
-                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                      em {(p.dia_envio_relatorio ?? 0) - diaHoje}d
+                      em {item.dia - diaHoje}d
                     </Badge>
                   </div>
                 ))}
