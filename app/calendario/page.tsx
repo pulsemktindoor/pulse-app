@@ -56,7 +56,9 @@ export default function CalendarioPage() {
 
   const ano = mesAtual.getFullYear()
   const mes = mesAtual.getMonth() + 1
-  const mesRef = `${ano}-${String(mes).padStart(2, '0')}-01`
+  // Os relatórios do mês exibido são gerados neste mês mas referem-se ao mês ANTERIOR
+  // (o app salva sempre subMonths(now, 1)), então buscamos pelo mês anterior
+  const mesRef = format(startOfMonth(subMonths(mesAtual, 1)), 'yyyy-MM-dd')
 
   function getEventos(): Record<number, Evento[]> {
     const map: Record<number, Evento[]> = {}
