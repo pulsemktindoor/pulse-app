@@ -320,7 +320,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <CalendarCheck className="w-4 h-4 text-purple-500" />
+              <CalendarCheck className="w-4 h-4 text-blue-500" />
               Próximos relatórios (7 dias)
             </CardTitle>
           </CardHeader>
@@ -340,7 +340,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                     </div>
-                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
                       em {(c.dia_envio_relatorio ?? 0) - diaHoje}d
                     </Badge>
                   </div>
@@ -356,7 +356,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                     </div>
-                    <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
                       em {(p.dia_envio_relatorio ?? 0) - diaHoje}d
                     </Badge>
                   </div>
@@ -372,7 +372,7 @@ export default function Dashboard() {
                     <Button
                       size="sm"
                       onClick={() => marcarEnviado(r.id)}
-                      className="bg-purple-600 hover:bg-purple-700 text-xs h-7"
+                      className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
                     >
                       Enviado
                     </Button>

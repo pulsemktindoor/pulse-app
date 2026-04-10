@@ -175,7 +175,7 @@ export default function CalendarioPage() {
   const corClasses: Record<string, string> = {
     green: 'bg-green-100 text-green-800',
     orange: 'bg-orange-100 text-orange-800',
-    purple: 'bg-purple-100 text-purple-800',
+    purple: 'bg-blue-100 text-blue-800',
     red: 'bg-red-100 text-red-800',
   }
 
@@ -245,9 +245,9 @@ export default function CalendarioPage() {
                   return (
                     <div
                       key={d}
-                      className={`min-h-[56px] rounded-lg p-1 ${hoje ? 'bg-purple-50 ring-1 ring-purple-300' : 'hover:bg-zinc-50'}`}
+                      className={`min-h-[56px] rounded-lg p-1 ${hoje ? 'bg-blue-50 ring-1 ring-blue-300' : 'hover:bg-zinc-50'}`}
                     >
-                      <p className={`text-xs font-medium text-right mb-1 ${hoje ? 'text-purple-700' : 'text-zinc-500'}`}>
+                      <p className={`text-xs font-medium text-right mb-1 ${hoje ? 'text-blue-700' : 'text-zinc-500'}`}>
                         {d}
                       </p>
                       <div className="space-y-0.5">
@@ -270,7 +270,7 @@ export default function CalendarioPage() {
                 {[
                   { cor: 'bg-green-200', label: 'Enviado' },
                   { cor: 'bg-orange-200', label: 'Pendente' },
-                  { cor: 'bg-purple-200', label: 'A enviar' },
+                  { cor: 'bg-blue-200', label: 'A enviar' },
                   { cor: 'bg-red-200', label: 'Contrato vence' },
                 ].map(({ cor, label }) => (
                   <span key={label} className="flex items-center gap-1.5 text-xs text-zinc-500">
@@ -323,7 +323,7 @@ export default function CalendarioPage() {
                     </Badge>
                   ) : (
                     <Link href="/relatorios/gerar">
-                      <Badge className="bg-zinc-100 text-zinc-600 hover:bg-purple-100 hover:text-purple-700 cursor-pointer text-xs shrink-0 transition-colors">
+                      <Badge className="bg-zinc-100 text-zinc-600 hover:bg-blue-100 hover:text-blue-700 cursor-pointer text-xs shrink-0 transition-colors">
                         <FileText className="w-3 h-3 mr-1" /> Gerar
                       </Badge>
                     </Link>

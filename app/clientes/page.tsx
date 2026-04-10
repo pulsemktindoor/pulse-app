@@ -187,7 +187,7 @@ export default function ClientesPage() {
           <h1 className="text-2xl font-bold text-zinc-900">Clientes</h1>
           <p className="text-zinc-500 text-sm mt-1">{clientes.length} cliente(s) cadastrado(s)</p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setDialogOpen(true)}>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Novo cliente
         </Button>
@@ -245,8 +245,8 @@ export default function ClientesPage() {
                       onClick={() => toggleLocal(local)}
                       className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                         form.locais.includes(local)
-                          ? 'bg-purple-600 text-white border-purple-600'
-                          : 'border-zinc-300 text-zinc-600 hover:border-purple-400'
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'border-zinc-300 text-zinc-600 hover:border-blue-400'
                       }`}
                     >
                       {local}
@@ -298,7 +298,7 @@ export default function ClientesPage() {
               <Button
                 onClick={editando ? salvarEdicao : salvarCliente}
                 disabled={salvando}
-                className="w-full bg-purple-600 hover:bg-purple-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 {salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar cliente'}
               </Button>
@@ -333,7 +333,7 @@ export default function ClientesPage() {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{c.nome_empresa}</CardTitle>
-                  <Badge variant="outline" className="text-purple-700 border-purple-200 bg-purple-50 shrink-0">
+                  <Badge variant="outline" className="text-blue-700 border-blue-200 bg-blue-50 shrink-0">
                     {c.plano} {c.plano === 1 ? 'tela' : 'telas'}
                   </Badge>
                 </div>
@@ -372,7 +372,7 @@ export default function ClientesPage() {
                 </div>
                 <div className="flex gap-2 pt-1">
                   <Link href={`/clientes/${c.id}`} className="flex-1">
-                    <Button size="sm" variant="outline" className="w-full text-xs h-8 text-purple-700 border-purple-200 hover:bg-purple-50">
+                    <Button size="sm" variant="outline" className="w-full text-xs h-8 text-blue-700 border-blue-200 hover:bg-blue-50">
                       <User className="w-3 h-3 mr-1" /> Ver perfil
                     </Button>
                   </Link>

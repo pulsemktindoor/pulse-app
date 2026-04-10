@@ -102,7 +102,7 @@ export default function ContratosPage() {
           <h1 className="text-2xl font-bold text-zinc-900">Contratos</h1>
           <p className="text-zinc-500 text-sm mt-1">{contratos.length} contrato(s) registrado(s)</p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setDialogOpen(true)}>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Novo contrato
         </Button>
@@ -158,7 +158,7 @@ export default function ContratosPage() {
                 </div>
               )}
 
-              <Button onClick={salvarContrato} disabled={salvando} className="w-full bg-purple-600 hover:bg-purple-700">
+              <Button onClick={salvarContrato} disabled={salvando} className="w-full bg-blue-600 hover:bg-blue-700">
                 {salvando ? 'Salvando...' : 'Cadastrar contrato'}
               </Button>
             </div>

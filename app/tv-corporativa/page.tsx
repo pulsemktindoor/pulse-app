@@ -135,7 +135,7 @@ export default function TvCorporativaPage() {
             </span>
           </p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setDialogOpen(true)}>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" /> Novo contrato
         </Button>
       </div>
@@ -265,7 +265,7 @@ export default function TvCorporativaPage() {
                   onChange={(e) => setForm({ ...form, data_fim_contrato: e.target.value })} />
               </div>
             </div>
-            <Button onClick={salvar} disabled={salvando} className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button onClick={salvar} disabled={salvando} className="w-full bg-blue-600 hover:bg-blue-700">
               {salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar'}
             </Button>
           </div>

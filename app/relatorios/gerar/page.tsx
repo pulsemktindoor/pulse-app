@@ -189,7 +189,7 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
   return { cliente, periodoLabel, dataGeracao, datas, nDias, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
 }
 
-const CORES = ['#7c3aed', '#2563eb', '#059669', '#d97706', '#dc2626']
+const CORES = ['#2563eb', '#2563eb', '#059669', '#d97706', '#dc2626']
 
 // Gráfico SVG puro — escala 100% via viewBox, funciona perfeitamente no PDF
 function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number }> }) {
@@ -223,7 +223,7 @@ function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number 
         const showLabel = i % labelInterval === 0 || i === data.length - 1
         return (
           <g key={i}>
-            {barH > 0 && <rect x={x} y={y} width={barW} height={barH} fill="#7c3aed" rx="2" ry="2" />}
+            {barH > 0 && <rect x={x} y={y} width={barW} height={barH} fill="#2563eb" rx="2" ry="2" />}
             {showLabel && (
               <text x={x + barW / 2} y={H - 4} textAnchor="middle" fontSize="8.5" fill="#9ca3af">{d.dia}</text>
             )}
@@ -316,7 +316,7 @@ export default function GerarRelatorioPage() {
 
         <div
           onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-zinc-300 rounded-2xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors"
+          className="border-2 border-dashed border-zinc-300 rounded-2xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-blue-50 transition-colors"
         >
           <Upload className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
           <p className="font-medium text-zinc-700">Clique para selecionar o PDF</p>
@@ -346,7 +346,7 @@ export default function GerarRelatorioPage() {
                   window.onafterprint = () => { document.title = titulo }
                   window.print()
                 }}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-blue-600 hover:bg-blue-700"
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Imprimir / Baixar PDF
@@ -406,7 +406,7 @@ export default function GerarRelatorioPage() {
       {dados && (
         <div id="relatorio" className="bg-white print:p-0" style={{ fontFamily: 'Inter, sans-serif' }}>
           {/* Header */}
-          <div style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%)', padding: '36px 48px', color: 'white' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%)', padding: '36px 48px', color: 'white' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               {/* Logo + título do cliente */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -435,7 +435,7 @@ export default function GerarRelatorioPage() {
             {/* Métricas */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 40 }}>
               {[
-                { label: 'Total do período', value: dados.totalPeriodo.toLocaleString('pt-BR'), color: '#7c3aed' },
+                { label: 'Total do período', value: dados.totalPeriodo.toLocaleString('pt-BR'), color: '#2563eb' },
                 { label: 'Média diária', value: dados.mediaDiaria.toLocaleString('pt-BR'), color: '#2563eb' },
                 { label: 'Telas ativas', value: String(dados.telasDados.filter(t => t.total > 0).length || dados.telasDados.length), color: '#059669' },
               ].map(card => (

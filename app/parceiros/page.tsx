@@ -133,7 +133,7 @@ export default function ParceirosPage() {
             {alertas.length > 0 && ` · ${alertas.length} com contrato em alerta`}
           </p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => setDialogOpen(true)}>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" /> Novo parceiro
         </Button>
       </div>
@@ -271,7 +271,7 @@ export default function ParceirosPage() {
               </div>
               <p className="text-xs text-zinc-400">Ex: 5 = lembrete todo dia 5</p>
             </div>
-            <Button onClick={salvar} disabled={salvando} className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button onClick={salvar} disabled={salvando} className="w-full bg-blue-600 hover:bg-blue-700">
               {salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar parceiro'}
             </Button>
           </div>

@@ -206,7 +206,7 @@ export default function ClientePerfilPage() {
               <Monitor className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
               <div className="flex flex-wrap gap-1.5">
                 {cliente.locais.map((l) => (
-                  <span key={l} className="text-xs bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded-full">
+                  <span key={l} className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">
                     {l}
                   </span>
                 ))}
