@@ -6,7 +6,6 @@ import { Cliente, Contrato } from '@/lib/supabase/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Select,
@@ -15,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, ArrowRight, Check, Download, Building2, FileText, Monitor, CalendarDays, DollarSign } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Download, FileText, Monitor, CalendarDays, DollarSign } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { format, addMonths, parseISO } from 'date-fns'
@@ -29,20 +28,9 @@ const PDFDownloadLink = dynamic(
   { ssr: false }
 )
 
-const DIAS_SEMANA = [
-  { key: 'domingo', label: 'Dom' },
-  { key: 'segunda', label: 'Seg' },
-  { key: 'terca', label: 'Ter' },
-  { key: 'quarta', label: 'Qua' },
-  { key: 'quinta', label: 'Qui' },
-  { key: 'sexta', label: 'Sex' },
-  { key: 'sabado', label: 'Sáb' },
-]
-
 type Tipo = 'anuncio' | 'parceria' | 'corporativa'
 
 interface FormState {
-  // Etapa 1 — Empresa
   tipo: Tipo
   cliente_id: string
   nome_empresa: string
@@ -55,17 +43,12 @@ interface FormState {
   uf: string
   cep: string
   contato: string
-  // Etapa 2 — Contrato
   duracao_meses: string
+  duracao_personalizada: string
   data_inicio: string
   valor_mensal: string
   dia_pagamento: string
   locais_selecionados: string[]
-  dias_semana: string[]
-  horario_semana_inicio: string
-  horario_semana_fim: string
-  horario_fds_inicio: string
-  horario_fds_fim: string
 }
 
 const emptyForm: FormState = {
@@ -82,15 +65,11 @@ const emptyForm: FormState = {
   cep: '',
   contato: '',
   duracao_meses: '6',
+  duracao_personalizada: '',
   data_inicio: format(new Date(), 'yyyy-MM-dd'),
   valor_mensal: '',
   dia_pagamento: '10',
   locais_selecionados: [],
-  dias_semana: ['segunda', 'terca', 'quarta', 'quinta', 'sexta'],
-  horario_semana_inicio: '05:00',
-  horario_semana_fim: '23:00',
-  horario_fds_inicio: '',
-  horario_fds_fim: '',
 }
 
 export default function NovoContratoPage() {
@@ -137,17 +116,12 @@ export default function NovoContratoPage() {
     }))
   }
 
-  function toggleDia(dia: string) {
-    setForm((prev) => ({
-      ...prev,
-      dias_semana: prev.dias_semana.includes(dia)
-        ? prev.dias_semana.filter((d) => d !== dia)
-        : [...prev.dias_semana, dia],
-    }))
-  }
+  const duracaoFinal = form.duracao_meses === 'personalizado'
+    ? parseInt(form.duracao_personalizada || '1')
+    : parseInt(form.duracao_meses)
 
   const dataFim = form.data_inicio
-    ? format(addMonths(parseISO(form.data_inicio), parseInt(form.duracao_meses || '6')), 'yyyy-MM-dd')
+    ? format(addMonths(parseISO(form.data_inicio), duracaoFinal || 1), 'yyyy-MM-dd')
     : ''
 
   const contratoPreview: Contrato = {
@@ -167,16 +141,16 @@ export default function NovoContratoPage() {
     cep: form.cep || null,
     contato: form.contato || null,
     locais_selecionados: form.locais_selecionados,
-    duracao_meses: parseInt(form.duracao_meses || '6'),
+    duracao_meses: duracaoFinal,
     data_inicio: form.data_inicio,
     data_fim: dataFim,
     valor_mensal: form.valor_mensal ? parseFloat(form.valor_mensal.replace(',', '.')) : null,
     dia_pagamento: form.dia_pagamento ? parseInt(form.dia_pagamento) : null,
-    horario_semana_inicio: form.horario_semana_inicio || null,
-    horario_semana_fim: form.horario_semana_fim || null,
-    horario_fds_inicio: form.horario_fds_inicio || null,
-    horario_fds_fim: form.horario_fds_fim || null,
-    dias_semana: form.dias_semana,
+    horario_semana_inicio: null,
+    horario_semana_fim: null,
+    horario_fds_inicio: null,
+    horario_fds_fim: null,
+    dias_semana: [],
     status: 'gerado',
     created_at: new Date().toISOString(),
   }
@@ -184,6 +158,10 @@ export default function NovoContratoPage() {
   async function salvar() {
     if (!form.nome_empresa) {
       toast.error('Preencha o nome da empresa')
+      return
+    }
+    if (form.duracao_meses === 'personalizado' && !form.duracao_personalizada) {
+      toast.error('Informe a duração em meses')
       return
     }
     setSalvando(true)
@@ -200,17 +178,17 @@ export default function NovoContratoPage() {
       uf: form.uf.trim() || null,
       cep: form.cep.trim() || null,
       contato: form.contato.trim() || null,
-      duracao_meses: parseInt(form.duracao_meses),
+      duracao_meses: duracaoFinal,
       data_inicio: form.data_inicio,
       data_fim: dataFim,
       valor_mensal: form.valor_mensal ? parseFloat(form.valor_mensal.replace(',', '.')) : null,
       dia_pagamento: form.dia_pagamento ? parseInt(form.dia_pagamento) : null,
       locais_selecionados: form.locais_selecionados,
-      dias_semana: form.dias_semana,
-      horario_semana_inicio: form.horario_semana_inicio || null,
-      horario_semana_fim: form.horario_semana_fim || null,
-      horario_fds_inicio: form.horario_fds_inicio || null,
-      horario_fds_fim: form.horario_fds_fim || null,
+      dias_semana: [],
+      horario_semana_inicio: null,
+      horario_semana_fim: null,
+      horario_fds_inicio: null,
+      horario_fds_fim: null,
       status: 'gerado' as const,
     }
     const { data, error } = await supabase.from('contratos').insert(payload).select().single()
@@ -278,7 +256,7 @@ export default function NovoContratoPage() {
               {([
                 { value: 'anuncio', label: 'Anúncio', desc: 'Cliente paga mensalmente', color: 'border-blue-500 bg-blue-50' },
                 { value: 'parceria', label: 'Parceria', desc: 'Troca de espaço (permuta)', color: 'border-emerald-500 bg-emerald-50' },
-                { value: 'corporativa', label: 'Corporativa', desc: 'TV corporativa paga', color: 'border-purple-500 bg-purple-50' },
+                { value: 'corporativa', label: 'Corporativa', desc: 'Tela corporativa + marketing', color: 'border-purple-500 bg-purple-50' },
               ] as const).map((t) => (
                 <button
                   key={t.value}
@@ -314,7 +292,7 @@ export default function NovoContratoPage() {
 
           <div className="border-t border-zinc-100 pt-4">
             <p className="text-sm font-medium text-zinc-700 mb-4">
-              Dados {isParceria ? 'da Contratada' : 'do Anunciante'}
+              Dados {isParceria ? 'da Contratada' : form.tipo === 'corporativa' ? 'do Contratado' : 'do Anunciante'}
             </p>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -423,17 +401,17 @@ export default function NovoContratoPage() {
       {/* ETAPA 2 — Detalhes */}
       {etapa === 2 && (
         <div className="space-y-6">
-          {/* Duração e datas */}
+          {/* Duração */}
           <div>
             <p className="text-sm font-medium text-zinc-700 mb-3 flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-blue-600" />
               Período do contrato
             </p>
-            <div className="grid grid-cols-3 gap-3 mb-3">
+            <div className="flex gap-3 mb-3">
               {[
-                { value: '2', label: '2 meses' },
                 { value: '6', label: '6 meses' },
                 { value: '12', label: '12 meses' },
+                { value: 'personalizado', label: 'Personalizado' },
               ].map((d) => (
                 <button
                   key={d.value}
@@ -449,6 +427,19 @@ export default function NovoContratoPage() {
                 </button>
               ))}
             </div>
+            {form.duracao_meses === 'personalizado' && (
+              <div className="flex items-center gap-3 mb-3">
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder="Ex: 3"
+                  value={form.duracao_personalizada}
+                  onChange={(e) => setForm({ ...form, duracao_personalizada: e.target.value })}
+                  className="w-32"
+                />
+                <span className="text-sm text-zinc-500">meses</span>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Data de início</Label>
@@ -498,14 +489,6 @@ export default function NovoContratoPage() {
                   />
                 </div>
               </div>
-              {form.valor_mensal && (
-                <div className="mt-3 bg-blue-50 rounded-xl px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm text-blue-700">Total do período ({form.duracao_meses} meses)</span>
-                  <span className="font-bold text-blue-800">
-                    R$ {(parseFloat(form.valor_mensal.replace(',', '.') || '0') * parseInt(form.duracao_meses)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-              )}
             </div>
           )}
 
@@ -513,7 +496,7 @@ export default function NovoContratoPage() {
           <div>
             <p className="text-sm font-medium text-zinc-700 mb-3 flex items-center gap-2">
               <Monitor className="w-4 h-4 text-blue-600" />
-              Telas selecionadas
+              Telas do contrato
             </p>
             <div className="flex flex-wrap gap-2">
               {LOCAIS_DISPONIVEIS.map((local) => (
@@ -533,72 +516,6 @@ export default function NovoContratoPage() {
             </div>
           </div>
 
-          {/* Dias da semana */}
-          <div>
-            <p className="text-sm font-medium text-zinc-700 mb-3">Dias de veiculação</p>
-            <div className="flex gap-2 flex-wrap">
-              {DIAS_SEMANA.map((d) => (
-                <button
-                  key={d.key}
-                  type="button"
-                  onClick={() => toggleDia(d.key)}
-                  className={`w-12 py-2 rounded-lg text-xs font-medium border transition-colors ${
-                    form.dias_semana.includes(d.key)
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-zinc-200 text-zinc-500 hover:border-zinc-300'
-                  }`}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Horários */}
-          <div>
-            <p className="text-sm font-medium text-zinc-700 mb-3">Horários</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <p className="text-xs text-zinc-500">Dias de semana</p>
-                <div className="flex gap-2 items-center">
-                  <Input
-                    type="time"
-                    value={form.horario_semana_inicio}
-                    onChange={(e) => setForm({ ...form, horario_semana_inicio: e.target.value })}
-                    className="text-sm"
-                  />
-                  <span className="text-zinc-400 text-xs shrink-0">até</span>
-                  <Input
-                    type="time"
-                    value={form.horario_semana_fim}
-                    onChange={(e) => setForm({ ...form, horario_semana_fim: e.target.value })}
-                    className="text-sm"
-                  />
-                </div>
-              </div>
-              <div className="space-y-3">
-                <p className="text-xs text-zinc-500">Fins de semana (opcional)</p>
-                <div className="flex gap-2 items-center">
-                  <Input
-                    type="time"
-                    value={form.horario_fds_inicio}
-                    onChange={(e) => setForm({ ...form, horario_fds_inicio: e.target.value })}
-                    className="text-sm"
-                    placeholder="--:--"
-                  />
-                  <span className="text-zinc-400 text-xs shrink-0">até</span>
-                  <Input
-                    type="time"
-                    value={form.horario_fds_fim}
-                    onChange={(e) => setForm({ ...form, horario_fds_fim: e.target.value })}
-                    className="text-sm"
-                    placeholder="--:--"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Preview resumo */}
           <Card className="border-blue-100 bg-blue-50/50">
             <CardContent className="pt-4 pb-3">
@@ -608,7 +525,7 @@ export default function NovoContratoPage() {
                   <p><span className="font-semibold">{form.nome_empresa}</span></p>
                   <p className="text-xs text-zinc-500">
                     {form.tipo === 'anuncio' ? 'Anúncio' : form.tipo === 'parceria' ? 'Parceria' : 'Corporativa'} ·{' '}
-                    {form.duracao_meses} meses ·{' '}
+                    {duracaoFinal} meses ·{' '}
                     {form.data_inicio && format(parseISO(form.data_inicio), 'dd/MM/yyyy', { locale: ptBR })}
                     {dataFim && ` → ${format(parseISO(dataFim), 'dd/MM/yyyy', { locale: ptBR })}`}
                   </p>
@@ -653,9 +570,9 @@ export default function NovoContratoPage() {
             <CardContent className="pt-4 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-zinc-500">Tipo</span>
-                <Badge className="text-xs">
+                <span className="font-medium">
                   {contratoSalvo.tipo === 'anuncio' ? 'Anúncio' : contratoSalvo.tipo === 'parceria' ? 'Parceria' : 'Corporativa'}
-                </Badge>
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Vigência</span>
@@ -676,25 +593,18 @@ export default function NovoContratoPage() {
           </Card>
 
           <PDFDownloadLink
-            document={<ContratoPDF contrato={contratoSalvo} />}
+            document={<ContratoPDF contrato={contratoSalvo} logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''} />}
             fileName={`contrato-${contratoSalvo.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(contratoSalvo.data_inicio), 'yyyy-MM')}.pdf`}
           >
             {({ loading: pdfLoading }: { loading: boolean }) => (
-              <Button
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={pdfLoading}
-              >
+              <Button className="w-full bg-blue-600 hover:bg-blue-700" disabled={pdfLoading}>
                 <Download className="w-4 h-4 mr-2" />
                 {pdfLoading ? 'Preparando PDF...' : 'Baixar PDF do contrato'}
               </Button>
             )}
           </PDFDownloadLink>
 
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => router.push('/contratos')}
-          >
+          <Button variant="outline" className="w-full" onClick={() => router.push('/contratos')}>
             Ver todos os contratos
           </Button>
         </div>

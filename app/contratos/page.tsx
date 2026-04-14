@@ -196,7 +196,7 @@ export default function ContratosPage() {
                       </Button>
                     )}
                     <PDFDownloadLink
-                      document={<ContratoPDF contrato={c} />}
+                      document={<ContratoPDF contrato={c} logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''} />}
                       fileName={`contrato-${c.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(c.data_inicio), 'yyyy-MM')}.pdf`}
                     >
                       {({ loading: pdfLoading }: { loading: boolean }) => (
