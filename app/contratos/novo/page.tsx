@@ -103,7 +103,7 @@ export default function NovoContratoPage() {
       cep: c.cep || '',
       contato: c.whatsapp || '',
       valor_mensal: c.valor_mensal ? String(c.valor_mensal) : '',
-      locais_selecionados: c.locais || [],
+      locais_selecionados: prev.tipo === 'corporativa' ? [] : (c.locais || []),
     }))
   }
 
@@ -261,7 +261,7 @@ export default function NovoContratoPage() {
                 <button
                   key={t.value}
                   type="button"
-                  onClick={() => setForm({ ...form, tipo: t.value })}
+                  onClick={() => setForm({ ...form, tipo: t.value, locais_selecionados: t.value === 'corporativa' ? [] : form.locais_selecionados })}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
                     form.tipo === t.value ? t.color : 'border-zinc-200 hover:border-zinc-300'
                   }`}
