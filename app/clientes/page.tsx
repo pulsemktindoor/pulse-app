@@ -61,6 +61,14 @@ export default function ClientesPage() {
     data_inicio_contrato: '',
     data_fim_contrato: '',
     dia_envio_relatorio: '5',
+    cnpj_cpf: '',
+    endereco: '',
+    numero: '',
+    bairro: '',
+    complemento: '',
+    cidade: 'Blumenau',
+    uf: 'SC',
+    cep: '',
   })
 
   useEffect(() => {
@@ -92,6 +100,14 @@ export default function ClientesPage() {
       data_inicio_contrato: form.data_inicio_contrato || null,
       data_fim_contrato: form.data_fim_contrato || null,
       dia_envio_relatorio: parseInt(form.dia_envio_relatorio) || 5,
+      cnpj_cpf: form.cnpj_cpf.trim() || null,
+      endereco: form.endereco.trim() || null,
+      numero: form.numero.trim() || null,
+      bairro: form.bairro.trim() || null,
+      complemento: form.complemento.trim() || null,
+      cidade: form.cidade.trim() || null,
+      uf: form.uf.trim() || null,
+      cep: form.cep.trim() || null,
     })
     if (error) {
       toast.error('Erro ao salvar: ' + error.message)
@@ -101,7 +117,8 @@ export default function ClientesPage() {
       setForm({
         nome_empresa: '', nome_responsavel: '', whatsapp: '', plano: 0,
         valor_mensal: '', locais: [], data_inicio_contrato: '', data_fim_contrato: '',
-        dia_envio_relatorio: '5',
+        dia_envio_relatorio: '5', cnpj_cpf: '', endereco: '', numero: '', bairro: '',
+        complemento: '', cidade: 'Blumenau', uf: 'SC', cep: '',
       })
       loadClientes()
     }
@@ -131,6 +148,14 @@ export default function ClientesPage() {
       data_inicio_contrato: c.data_inicio_contrato || '',
       data_fim_contrato: c.data_fim_contrato || '',
       dia_envio_relatorio: String(c.dia_envio_relatorio || 5),
+      cnpj_cpf: c.cnpj_cpf || '',
+      endereco: c.endereco || '',
+      numero: c.numero || '',
+      bairro: c.bairro || '',
+      complemento: c.complemento || '',
+      cidade: c.cidade || 'Blumenau',
+      uf: c.uf || 'SC',
+      cep: c.cep || '',
     })
     setDialogOpen(true)
   }
@@ -148,6 +173,14 @@ export default function ClientesPage() {
       data_inicio_contrato: form.data_inicio_contrato || null,
       data_fim_contrato: form.data_fim_contrato || null,
       dia_envio_relatorio: parseInt(form.dia_envio_relatorio) || 5,
+      cnpj_cpf: form.cnpj_cpf.trim() || null,
+      endereco: form.endereco.trim() || null,
+      numero: form.numero.trim() || null,
+      bairro: form.bairro.trim() || null,
+      complemento: form.complemento.trim() || null,
+      cidade: form.cidade.trim() || null,
+      uf: form.uf.trim() || null,
+      cep: form.cep.trim() || null,
     }).eq('id', editando.id)
     if (error) {
       toast.error('Erro ao salvar: ' + error.message)
@@ -163,7 +196,12 @@ export default function ClientesPage() {
   function fecharDialog() {
     setDialogOpen(false)
     setEditando(null)
-    setForm({ nome_empresa: '', nome_responsavel: '', whatsapp: '', plano: 0, valor_mensal: '', locais: [], data_inicio_contrato: '', data_fim_contrato: '', dia_envio_relatorio: '5' })
+    setForm({
+      nome_empresa: '', nome_responsavel: '', whatsapp: '', plano: 0, valor_mensal: '',
+      locais: [], data_inicio_contrato: '', data_fim_contrato: '', dia_envio_relatorio: '5',
+      cnpj_cpf: '', endereco: '', numero: '', bairro: '', complemento: '',
+      cidade: 'Blumenau', uf: 'SC', cep: '',
+    })
   }
 
   function toggleLocal(local: string) {
@@ -224,14 +262,93 @@ export default function ClientesPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label>Valor mensal (R$) *</Label>
-                <Input
-                  type="number"
-                  placeholder="0,00"
-                  value={form.valor_mensal}
-                  onChange={(e) => setForm({ ...form, valor_mensal: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label>Valor mensal (R$) *</Label>
+                  <Input
+                    type="number"
+                    placeholder="0,00"
+                    value={form.valor_mensal}
+                    onChange={(e) => setForm({ ...form, valor_mensal: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>CNPJ / CPF</Label>
+                  <Input
+                    placeholder="00.000.000/0001-00"
+                    value={form.cnpj_cpf}
+                    onChange={(e) => setForm({ ...form, cnpj_cpf: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Endereço */}
+              <div className="border-t border-zinc-100 pt-4">
+                <p className="text-sm font-medium text-zinc-700 mb-3">Endereço</p>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2 space-y-1">
+                      <Label>Rua / Avenida</Label>
+                      <Input
+                        placeholder="R. das Flores"
+                        value={form.endereco}
+                        onChange={(e) => setForm({ ...form, endereco: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Número</Label>
+                      <Input
+                        placeholder="100"
+                        value={form.numero}
+                        onChange={(e) => setForm({ ...form, numero: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label>Bairro</Label>
+                      <Input
+                        placeholder="Centro"
+                        value={form.bairro}
+                        onChange={(e) => setForm({ ...form, bairro: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Complemento</Label>
+                      <Input
+                        placeholder="Sala 2"
+                        value={form.complemento}
+                        onChange={(e) => setForm({ ...form, complemento: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-1 space-y-1">
+                      <Label>Cidade</Label>
+                      <Input
+                        value={form.cidade}
+                        onChange={(e) => setForm({ ...form, cidade: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>UF</Label>
+                      <Input
+                        placeholder="SC"
+                        maxLength={2}
+                        value={form.uf}
+                        onChange={(e) => setForm({ ...form, uf: e.target.value.toUpperCase() })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>CEP</Label>
+                      <Input
+                        placeholder="89000-000"
+                        value={form.cep}
+                        onChange={(e) => setForm({ ...form, cep: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Telas */}

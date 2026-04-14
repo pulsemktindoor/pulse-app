@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, TrendingUp, Sparkles, CalendarDays, Handshake, Tv, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, TrendingUp, Sparkles, CalendarDays, Handshake, Tv, FileText, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/contratos', label: 'Contratos', icon: FileText },
   { href: '/relatorios', label: 'Relatórios', icon: TrendingUp },
   { href: '/relatorios/gerar', label: 'Gerar Relatório', icon: Sparkles },
   { href: '/calendario', label: 'Calendário', icon: CalendarDays },
