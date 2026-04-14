@@ -444,7 +444,11 @@ export default function ContratosPage() {
 
             {/* Telas */}
             <div className="border-t pt-4">
-              <p className="text-sm font-medium text-zinc-700 mb-3">Telas do contrato</p>
+              <p className="text-sm font-medium text-zinc-700 mb-3">
+                {editForm.tipo === 'corporativa'
+                  ? 'Telas de Marketing Indoor para Permuta (opcional)'
+                  : 'Telas do contrato'}
+              </p>
               <div className="flex flex-wrap gap-2">
                 {LOCAIS_DISPONIVEIS.map((local) => (
                   <button key={local} type="button" onClick={() => toggleLocalEdit(local)}

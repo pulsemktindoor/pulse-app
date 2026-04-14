@@ -256,7 +256,7 @@ export default function NovoContratoPage() {
               {([
                 { value: 'anuncio', label: 'Anúncio', desc: 'Cliente paga mensalmente', color: 'border-blue-500 bg-blue-50' },
                 { value: 'parceria', label: 'Parceria', desc: 'Troca de espaço (permuta)', color: 'border-emerald-500 bg-emerald-50' },
-                { value: 'corporativa', label: 'Corporativa', desc: 'Tela corporativa + marketing', color: 'border-purple-500 bg-purple-50' },
+                { value: 'corporativa', label: 'Corporativa', desc: 'TV corporativa (c/ ou s/ marketing)', color: 'border-purple-500 bg-purple-50' },
               ] as const).map((t) => (
                 <button
                   key={t.value}
@@ -496,7 +496,9 @@ export default function NovoContratoPage() {
           <div>
             <p className="text-sm font-medium text-zinc-700 mb-3 flex items-center gap-2">
               <Monitor className="w-4 h-4 text-blue-600" />
-              Telas do contrato
+              {form.tipo === 'corporativa'
+                ? 'Telas de Marketing Indoor para Permuta (opcional — deixe vazio para contrato só corporativa)'
+                : 'Telas do contrato'}
             </p>
             <div className="flex flex-wrap gap-2">
               {LOCAIS_DISPONIVEIS.map((local) => (

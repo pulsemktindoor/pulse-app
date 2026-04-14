@@ -322,10 +322,13 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
     ? `Nº ${String(contrato.numero_contrato).padStart(4, '0')}/${ano}`
     : ''
 
+  const temPermuta = contrato.tipo === 'corporativa' && (contrato.locais_selecionados?.length ?? 0) > 0
+
   const tituloTipo =
     contrato.tipo === 'anuncio' ? 'Contrato de Publicidade Mídia Indoor' :
     contrato.tipo === 'parceria' ? 'Contrato de Parceria / Permuta' :
-    'Contrato de Parceria — Tela Corporativa e Tela Marketing Indoor'
+    temPermuta ? 'Contrato de Parceria — Tela Corporativa e Tela Marketing Indoor' :
+    'Contrato de TV Corporativa'
 
   const parteLabel =
     contrato.tipo === 'anuncio' ? 'Anunciante' :
@@ -764,158 +767,184 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
           {/* ══════════════════════════════════════
               CONTRATO CORPORATIVA
           ══════════════════════════════════════ */}
-          {contrato.tipo === 'corporativa' && (
-            <>
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'1.1  O presente contrato tem por objeto a instalação e gestão de TV Corporativa no estabelecimento do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' ('}
-                  <Text style={s.negrito}>{contrato.nome_empresa}</Text>
-                  {'), com programação e conteúdo exclusivos do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {', pelo prazo de '}
-                  <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
-                  {', com início em '}
-                  <Text style={s.negrito}>{fmtData(contrato.data_inicio)}</Text>
-                  {'.'}
-                </Text>
-                <Text style={s.clausulaTexto}>
-                  1.2  O local de instalação será definido em comum acordo entre as partes.
-                </Text>
-              </View>
-
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – SERVIÇOS REALIZADOS PELA PULSE MARKETING INDOOR</Text>
-                <Text style={s.clausulaTexto}>
-                  {'2.1  A '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' realizará gestão de anúncios, monitoramento remoto, manutenção e programação das telas.'}
-                </Text>
-              </View>
-
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – OBRIGAÇÕES DO CONTRATADO</Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'3.1  O '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' deverá ceder o espaço em seu estabelecimento comercial para instalação das telas, fornecendo energia elétrica e internet.'}
-                </Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'3.2  O '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' fica expressamente proibido de sintonizar as telas em programação diversa daquela fornecida pela '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {', devendo manter as telas ligadas durante todo o período acordado.'}
-                </Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'3.3  É dever do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' informar a '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' sobre possíveis problemas, como: tela desligada, tela sem exibir vídeo, dentre outros problemas que afetem a exibição da programação.'}
-                </Text>
-                <Text style={s.clausulaTexto}>
-                  {'3.4  O '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' deve zelar pela segurança dos equipamentos da '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {', como se fossem seus, durante a vigência do presente contrato.'}
-                </Text>
-              </View>
-
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'4.1  A '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' compromete-se a realizar a gestão, manutenção e programação da tela corporativa instalada no estabelecimento do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {', conforme conteúdo e programação definidos em comum acordo.'}
-                </Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'4.2  É dever da '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' informar o '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' sobre eventuais problemas técnicos que afetem a exibição da programação.'}
-                </Text>
-                <Text style={s.clausulaTexto}>
-                  {'4.3  O conteúdo exibido na tela corporativa é de uso exclusivo do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {', não sendo veiculado nenhum anúncio de terceiros sem autorização expressa.'}
-                </Text>
-              </View>
-
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DO VALOR E DO PAGAMENTO</Text>
-                {contrato.valor_mensal ? (
-                  <>
-                    <View style={s.valorBox}>
-                      <View>
-                        <Text style={s.valorLabel}>Valor mensal — Tela Corporativa</Text>
-                        <Text style={s.valorNumero}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
-                        {contrato.dia_pagamento ? (
-                          <Text style={s.valorSub}>Vencimento: todo dia {contrato.dia_pagamento} do mês</Text>
-                        ) : null}
-                      </View>
-                    </View>
-                    <Text style={s.clausulaTexto}>
-                      {'6.1  O '}
-                      <Text style={s.negrito}>CONTRATADO</Text>
-                      {' pagará mensalmente '}
-                      <Text style={s.negrito}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
-                      {' referente à Tela Corporativa, com vencimento todo dia '}
-                      <Text style={s.negrito}>{contrato.dia_pagamento || '___'}</Text>
-                      {' de cada mês.'}
-                    </Text>
-                  </>
-                ) : (
-                  <Text style={s.clausulaTexto}>
-                    6.1  O valor referente à Tela Corporativa será definido em comum acordo entre as partes, com vencimento todo dia _______ de cada mês.
+          {contrato.tipo === 'corporativa' && (() => {
+            const nValor    = temPermuta ? 6 : 5
+            const nInadimpl = temPermuta ? 7 : 6
+            const nVig      = temPermuta ? 8 : 7
+            const ord = ['','PRIMEIRA','SEGUNDA','TERCEIRA','QUARTA','QUINTA','SEXTA','SÉTIMA','OITAVA']
+            return (
+              <>
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {temPermuta
+                      ? '1.1  Instalação de 01 (uma) tela de Marketing Indoor e 01 (uma) tela de TV Corporativa no estabelecimento do '
+                      : '1.1  Instalação de 01 (uma) tela de TV Corporativa no estabelecimento do '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' ('}
+                    <Text style={s.negrito}>{contrato.nome_empresa}</Text>
+                    {'), pelo prazo de '}
+                    <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
+                    {', com início em '}
+                    <Text style={s.negrito}>{fmtData(contrato.data_inicio)}</Text>
+                    {'.'}
                   </Text>
+                  <Text style={s.clausulaTexto}>
+                    1.2  Os locais de instalação serão definidos em comum acordo entre as partes.
+                  </Text>
+                </View>
+
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – SERVIÇOS REALIZADOS PELA PULSE MARKETING INDOOR</Text>
+                  <Text style={s.clausulaTexto}>
+                    {'2.1  A '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' realizará gestão de anúncios, monitoramento remoto, manutenção e programação das telas.'}
+                  </Text>
+                </View>
+
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – OBRIGAÇÕES DO CONTRATADO</Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {'3.1  O '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' deverá ceder o espaço em seu estabelecimento comercial para instalação '}{temPermuta ? 'das telas' : 'da tela'}{', fornecendo energia elétrica e internet.'}
+                  </Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {'3.2  O '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' fica expressamente proibido de sintonizar '}{temPermuta ? 'as telas' : 'a tela'}{' em programação diversa daquela fornecida pela '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {', devendo manter '}{temPermuta ? 'as telas ligadas' : 'a tela ligada'}{' durante todo o período acordado.'}
+                  </Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {'3.3  É dever do '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' informar a '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' sobre possíveis problemas, como: tela desligada, tela sem exibir vídeo, dentre outros problemas que afetem a exibição da programação.'}
+                  </Text>
+                  <Text style={s.clausulaTexto}>
+                    {'3.4  O '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' deve zelar pela segurança dos equipamentos da '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {', como se fossem seus, durante a vigência do presente contrato.'}
+                  </Text>
+                </View>
+
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {'4.1  A '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' é responsável pela instalação, manutenção e programação '}{temPermuta ? 'das telas' : 'da tela'}{', respeitando as regras do estabelecimento e as cláusulas do presente instrumento.'}
+                  </Text>
+                  {temPermuta && (
+                    <>
+                      <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                        4.2  A comercialização de espaços de mídia na tela de Marketing Indoor respeitará as seguintes condições:
+                      </Text>
+                      {[
+                        'Não concorrer com produtos e serviços do CONTRATADO;',
+                        'Não apresentar conteúdo de cunho político, ideológico, exploração sexual ou preconceituoso;',
+                        'Respeitar a legislação vigente quanto à propriedade intelectual e direitos autorais de conteúdos audiovisuais.',
+                      ].map((item, i) => (
+                        <View key={i} style={s.bullet}>
+                          <Text style={s.bulletDot}>•</Text>
+                          <Text style={s.bulletTexto}>{item}</Text>
+                        </View>
+                      ))}
+                    </>
+                  )}
+                </View>
+
+                {temPermuta && (
+                  <View style={s.clausula} wrap={false}>
+                    <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DA PERMUTA (TELA MARKETING INDOOR)</Text>
+                    <Text style={s.clausulaTexto}>
+                      {'5.1  Na modalidade de permuta, a '}
+                      <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                      {' irá transmitir um VT publicitário do '}
+                      <Text style={s.negrito}>CONTRATADO</Text>
+                      {' em 3 (três) telas de estabelecimentos parceiros, em troca da utilização do espaço cedido no estabelecimento do '}
+                      <Text style={s.negrito}>CONTRATADO</Text>
+                      {' para a tela de Marketing Indoor.'}
+                    </Text>
+                  </View>
                 )}
-              </View>
 
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>6. CLÁUSULA SEXTA – DO INADIMPLEMENTO</Text>
-                <Text style={s.clausulaTexto}>
-                  6.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.
-                </Text>
-              </View>
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>{nValor}. CLÁUSULA {ord[nValor]} – DO VALOR E DO PAGAMENTO (TELA CORPORATIVA)</Text>
+                  {contrato.valor_mensal ? (
+                    <>
+                      <View style={s.valorBox}>
+                        <View>
+                          <Text style={s.valorLabel}>Valor mensal — Tela Corporativa</Text>
+                          <Text style={s.valorNumero}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
+                          {contrato.dia_pagamento ? (
+                            <Text style={s.valorSub}>Vencimento: todo dia {contrato.dia_pagamento} do mês</Text>
+                          ) : null}
+                        </View>
+                      </View>
+                      <Text style={s.clausulaTexto}>
+                        {`${nValor}.1  O `}
+                        <Text style={s.negrito}>CONTRATADO</Text>
+                        {' pagará mensalmente '}
+                        <Text style={s.negrito}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
+                        {' referente à Tela Corporativa, com vencimento todo dia '}
+                        <Text style={s.negrito}>{contrato.dia_pagamento || '___'}</Text>
+                        {' de cada mês, mediante emissão de recibo pela '}
+                        <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                        {'.'}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={s.clausulaTexto}>
+                      {`${nValor}.1  O valor referente à Tela Corporativa será definido em comum acordo entre as partes, com vencimento todo dia _______ de cada mês.`}
+                    </Text>
+                  )}
+                </View>
 
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>7. CLÁUSULA SÉTIMA – VIGÊNCIA E RESCISÃO</Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'7.1  A vigência deste contrato iniciará quando a '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' instalar a tela no estabelecimento do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' e vigorará pelo prazo de '}
-                  <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
-                  {'.'}
-                </Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  7.2  O presente contrato poderá ser rescindido mediante <Text style={s.negrito}>SOLICITAÇÃO EXPRESSA</Text> com prazo mínimo de 30 (trinta) dias de antecedência, após um período mínimo de 03 (três) meses da instalação. Caso haja silêncio entre as partes, a renovação será automática.
-                </Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  7.3  Poderá ser rescindido este contrato: A) quando qualquer das partes não tenha mais interesse na continuidade, devendo comunicar prévia e formalmente à outra parte, agendando data/hora de desligamento e retirada dos equipamentos; B) pelo uso dos serviços para fim diverso do contratado; C) pelo descumprimento de qualquer cláusula prevista; D) por ajuizamento de ação que afete a credibilidade de qualquer das partes; E) por pedido de concordata, falência ou dissolução judicial/extrajudicial; F) por caso fortuito ou força maior.
-                </Text>
-                <Text style={s.clausulaTexto}>
-                  {'7.4  Rescindido o contrato, o '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' ficará automaticamente proibido de utilizar equipamentos de titularidade da '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {', bem como a '}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' ficará impedida de utilizar o nome do '}
-                  <Text style={s.negrito}>CONTRATADO</Text>
-                  {' em seu portfólio.'}
-                </Text>
-              </View>
-            </>
-          )}
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>{nInadimpl}. CLÁUSULA {ord[nInadimpl]} – DO INADIMPLEMENTO</Text>
+                  <Text style={s.clausulaTexto}>
+                    {`${nInadimpl}.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.`}
+                  </Text>
+                </View>
+
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>{nVig}. CLÁUSULA {ord[nVig]} – VIGÊNCIA E RESCISÃO</Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {`${nVig}.1  A vigência deste contrato iniciará quando a `}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' instalar '}{temPermuta ? 'as telas' : 'a tela'}{' no estabelecimento do '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' e vigorará pelo prazo de '}
+                    <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
+                    {'.'}
+                  </Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {`${nVig}.2  O presente contrato poderá ser rescindido mediante `}<Text style={s.negrito}>SOLICITAÇÃO EXPRESSA</Text>{` com prazo mínimo de 30 (trinta) dias de antecedência, após um período mínimo de 03 (três) meses da instalação. Caso haja silêncio entre as partes, a renovação será automática.`}
+                  </Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {`${nVig}.3  Poderá ser rescindido este contrato: A) quando qualquer das partes não tenha mais interesse na continuidade, devendo comunicar prévia e formalmente à outra parte, agendando data/hora de desligamento e retirada dos equipamentos; B) pelo uso dos serviços para fim diverso do contratado; C) pelo descumprimento de qualquer cláusula prevista; D) por ajuizamento de ação que afete a credibilidade de qualquer das partes; E) por pedido de concordata, falência ou dissolução judicial/extrajudicial; F) por caso fortuito ou força maior.`}
+                  </Text>
+                  <Text style={s.clausulaTexto}>
+                    {`${nVig}.4  Rescindido o contrato, o `}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' ficará automaticamente proibido de utilizar equipamentos de titularidade da '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {', bem como a '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' ficará impedida de utilizar o nome do '}
+                    <Text style={s.negrito}>CONTRATADO</Text>
+                    {' em seu portfólio.'}
+                  </Text>
+                </View>
+              </>
+            )
+          })()}
 
           {/* ── DATA E ASSINATURAS ── */}
           {contrato.tipo === 'corporativa' && (
