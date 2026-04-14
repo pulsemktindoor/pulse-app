@@ -24,19 +24,20 @@ const s = StyleSheet.create({
     fontFamily: 'Helvetica',
     fontSize: 9,
     color: TEXT,
-    paddingBottom: 45,
+    paddingTop: 20,
+    paddingBottom: 50,
     paddingHorizontal: 0,
   },
 
   // HEADER
   header: {
     paddingHorizontal: 40,
-    paddingTop: 24,
-    paddingBottom: 18,
+    paddingTop: 0,
+    paddingBottom: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomWidth: 3,
+    borderBottomWidth: 2,
     borderBottomColor: BLUE,
   },
   headerLogo: {
@@ -45,23 +46,17 @@ const s = StyleSheet.create({
     gap: 10,
   },
   logoImg: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 6,
   },
   logoTexto: {
     flexDirection: 'column',
-  },
-  logoNome: {
-    fontSize: 16,
-    fontFamily: 'Helvetica-Bold',
-    color: BLUE,
-    letterSpacing: 1,
+    justifyContent: 'center',
   },
   logoSub: {
-    fontSize: 7.5,
+    fontSize: 8,
     color: MUTED,
-    marginTop: 1,
     letterSpacing: 0.3,
   },
   headerDireita: {
@@ -75,7 +70,7 @@ const s = StyleSheet.create({
     marginBottom: 2,
   },
   headerTipo: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'Helvetica-Bold',
     color: DARK,
   },
@@ -170,6 +165,7 @@ const s = StyleSheet.create({
   // CLÁUSULAS
   clausula: {
     marginBottom: 10,
+    breakInside: 'avoid',
   },
   clausulaTitulo: {
     fontSize: 8.5,
@@ -225,17 +221,19 @@ const s = StyleSheet.create({
 
   // VALOR BOX
   valorBox: {
-    backgroundColor: DARK,
-    borderRadius: 6,
-    padding: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: LIGHT_BG,
+    borderRadius: 5,
+    padding: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: BLUE,
     marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  valorLabel: { fontSize: 7.5, color: '#93c5fd' },
-  valorNumero: { fontSize: 17, fontFamily: 'Helvetica-Bold', color: '#fff', marginTop: 2 },
-  valorSub: { fontSize: 7, color: '#bfdbfe', marginTop: 2 },
+  valorLabel: { fontSize: 7.5, color: MUTED },
+  valorNumero: { fontSize: 14, fontFamily: 'Helvetica-Bold', color: DARK, marginTop: 1 },
+  valorSub: { fontSize: 7, color: MUTED, marginTop: 2 },
 
   // DIVISOR
   divider: {
@@ -354,7 +352,6 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
               <Image style={s.logoImg} src={logoUrl} />
             ) : null}
             <View style={s.logoTexto}>
-              <Text style={s.logoNome}>PULSE</Text>
               <Text style={s.logoSub}>MARKETING INDOOR</Text>
             </View>
           </View>
@@ -473,7 +470,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
           ══════════════════════════════════════ */}
           {contrato.tipo === 'anuncio' && (
             <>
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                 <Text style={s.clausulaTexto}>
                   {'1.1  O presente contrato tem por objeto a exibição do comercial da empresa '}
@@ -490,7 +487,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – DO PRAZO DE ANÚNCIO</Text>
                 {contrato.locais_selecionados?.length > 0 ? (
                   <>
@@ -512,7 +509,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 )}
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – DO INVESTIMENTO</Text>
                 {contrato.valor_mensal ? (
                   <>
@@ -544,7 +541,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 )}
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'4.1  A '}
@@ -569,7 +566,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DAS OBRIGAÇÕES DO ANUNCIANTE</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'5.1  O '}
@@ -597,14 +594,14 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 ))}
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>6. CLÁUSULA SEXTA – DO INADIMPLEMENTO</Text>
                 <Text style={s.clausulaTexto}>
                   6.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do NCPC, para a cobrança do valor devido pela parte inadimplente.
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>7. CLÁUSULA SÉTIMA – VIGÊNCIA E RESCISÃO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'7.1  A vigência deste contrato iniciará no momento em que a propaganda do '}
@@ -630,7 +627,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
           ══════════════════════════════════════ */}
           {contrato.tipo === 'parceria' && (
             <>
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                 <Text style={s.clausulaTexto}>
                   {'1.1  O objeto do presente Contrato é a parceria entre a '}
@@ -649,7 +646,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – DOS SERVIÇOS REALIZADOS PELA PULSE MARKETING INDOOR</Text>
                 <Text style={s.clausulaTexto}>
                   {'2.1  A '}
@@ -658,7 +655,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – OBRIGAÇÕES DA CONTRATADA</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'3.1  A '}
@@ -690,7 +687,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'4.1  A comercialização de espaços publicitários é de inteira responsabilidade da '}
@@ -712,7 +709,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 ))}
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DA PERMUTA</Text>
                 <Text style={s.clausulaTexto}>
                   {'5.1  Na modalidade de permuta, a '}
@@ -725,14 +722,14 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>6. CLÁUSULA SEXTA – DO INADIMPLEMENTO</Text>
                 <Text style={s.clausulaTexto}>
                   6.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>7. CLÁUSULA SÉTIMA – VIGÊNCIA E RESCISÃO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'7.1  A vigência deste contrato iniciará quando a '}
@@ -769,7 +766,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
           ══════════════════════════════════════ */}
           {contrato.tipo === 'corporativa' && (
             <>
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'1.1  Instalação de 01 (uma) tela de Marketing Indoor e 01 (uma) tela de TV Corporativa no estabelecimento '}
@@ -783,7 +780,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – SERVIÇOS REALIZADOS PELA PULSE MARKETING INDOOR</Text>
                 <Text style={s.clausulaTexto}>
                   {'2.1  A '}
@@ -792,7 +789,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – OBRIGAÇÕES DO CONTRATADO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'3.1  O '}
@@ -822,7 +819,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'4.1  A comercialização de espaços publicitários é de inteira responsabilidade da '}
@@ -844,7 +841,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 ))}
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DA PERMUTA (TELA MARKETING INDOOR)</Text>
                 <Text style={s.clausulaTexto}>
                   {'5.1  Na modalidade de permuta, a '}
@@ -857,7 +854,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>6. CLÁUSULA SEXTA – DO VALOR E DO PAGAMENTO (TELA CORPORATIVA)</Text>
                 {contrato.valor_mensal ? (
                   <>
@@ -887,14 +884,14 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 )}
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>7. CLÁUSULA SÉTIMA – DO INADIMPLEMENTO</Text>
                 <Text style={s.clausulaTexto}>
                   7.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.
                 </Text>
               </View>
 
-              <View style={s.clausula}>
+              <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>8. CLÁUSULA OITAVA – VIGÊNCIA E RESCISÃO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'8.1  A vigência deste contrato iniciará quando a '}
