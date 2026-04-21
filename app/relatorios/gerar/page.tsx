@@ -194,7 +194,7 @@ const CORES = ['#2563eb', '#2563eb', '#059669', '#d97706', '#dc2626']
 
 // Gráfico SVG puro — escala 100% via viewBox, funciona perfeitamente no PDF
 function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number }> }) {
-  const W = 560, H = 200
+  const W = 560, H = 160
   const pL = 44, pR = 8, pT = 8, pB = 28
   const cW = W - pL - pR
   const cH = H - pT - pB
@@ -407,58 +407,58 @@ export default function GerarRelatorioPage() {
       {dados && (
         <div id="relatorio" className="bg-white print:p-0" style={{ fontFamily: 'Inter, sans-serif' }}>
           {/* Header */}
-          <div style={{ background: 'linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%)', padding: '36px 48px', color: 'white' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%)', padding: '24px 40px', color: 'white' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               {/* Logo + título do cliente */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 {/* Logo Pulse */}
-                <div style={{ width: 90, height: 90, borderRadius: 16, overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 20px rgba(0,0,0,0.25)' }}>
+                <div style={{ width: 72, height: 72, borderRadius: 14, overflow: 'hidden', flexShrink: 0, boxShadow: '0 4px 20px rgba(0,0,0,0.25)' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/pulse-logo.png?v=2" alt="Pulse" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 12, opacity: 0.75, margin: '0 0 4px', letterSpacing: 1, textTransform: 'uppercase' }}>
+                  <p style={{ fontSize: 11, opacity: 0.75, margin: '0 0 3px', letterSpacing: 1, textTransform: 'uppercase' }}>
                     Relatório de Exibições
                   </p>
-                  <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0, lineHeight: 1.1 }}>{dados.cliente}</h1>
-                  <p style={{ fontSize: 13, opacity: 0.75, margin: '6px 0 0' }}>{dados.periodoLabel}</p>
+                  <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, lineHeight: 1.1 }}>{dados.cliente}</h1>
+                  <p style={{ fontSize: 12, opacity: 0.75, margin: '4px 0 0' }}>{dados.periodoLabel}</p>
                 </div>
               </div>
               {/* Data */}
               <div style={{ textAlign: 'right', opacity: 0.85 }}>
-                <p style={{ margin: 0, fontSize: 12, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase' }}>Gerado em</p>
-                <p style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>{dados.dataGeracao}</p>
+                <p style={{ margin: 0, fontSize: 11, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase' }}>Gerado em</p>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{dados.dataGeracao}</p>
               </div>
             </div>
           </div>
 
-          <div style={{ padding: '40px 48px' }}>
+          <div style={{ padding: '28px 40px' }}>
             {/* Métricas */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 40 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 28 }}>
               {[
                 { label: 'Total do período', value: dados.totalPeriodo.toLocaleString('pt-BR'), color: '#2563eb' },
                 { label: 'Média diária', value: dados.mediaDiaria.toLocaleString('pt-BR'), color: '#2563eb' },
                 { label: 'Telas ativas', value: String(dados.telasDados.filter(t => t.total > 0).length || dados.telasDados.length), color: '#059669' },
               ].map(card => (
-                <div key={card.label} style={{ background: '#f8f7ff', borderRadius: 16, padding: '20px 24px', borderTop: `4px solid ${card.color}` }}>
-                  <p style={{ margin: '0 0 4px', fontSize: 11, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 1 }}>{card.label}</p>
-                  <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: card.color }}>{card.value}</p>
+                <div key={card.label} style={{ background: '#f8f7ff', borderRadius: 14, padding: '16px 20px', borderTop: `4px solid ${card.color}` }}>
+                  <p style={{ margin: '0 0 3px', fontSize: 10, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 1 }}>{card.label}</p>
+                  <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: card.color }}>{card.value}</p>
                 </div>
               ))}
             </div>
 
             {/* Gráfico diário */}
             {dadosGrafico.length > 0 && (
-              <div style={{ marginBottom: 40 }}>
-                <div style={{ marginBottom: 12 }}>
-                  <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0 }}>
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ marginBottom: 8 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>
                     Exibições por dia
                   </h2>
-                  <p style={{ fontSize: 12, color: '#9ca3af', margin: '2px 0 0' }}>
+                  <p style={{ fontSize: 11, color: '#9ca3af', margin: '2px 0 0' }}>
                     Total combinado de todas as telas · {dados.periodoLabel}
                   </p>
                 </div>
-                <div style={{ background: '#f9fafb', borderRadius: 16, padding: '20px 16px' }}>
+                <div style={{ background: '#f9fafb', borderRadius: 14, padding: '14px 12px' }}>
                   <GraficoBarras data={dadosGrafico} />
                 </div>
               </div>
@@ -466,11 +466,11 @@ export default function GerarRelatorioPage() {
 
             {/* Por tela */}
             {dados.telasDados.length > 0 && (
-              <div style={{ marginBottom: 40 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 16 }}>
+              <div style={{ marginBottom: 24 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 12 }}>
                   Exibições por tela — {dados.periodoLabel}
                 </h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
                   {dados.telasDados.map((tela, i) => (
                     <div
                       key={tela.nome}
@@ -478,21 +478,21 @@ export default function GerarRelatorioPage() {
                         background: 'white',
                         border: '1px solid #e5e7eb',
                         borderLeft: `4px solid ${CORES[i % CORES.length]}`,
-                        borderRadius: 12,
-                        padding: '16px 20px',
+                        borderRadius: 10,
+                        padding: '12px 16px',
                         opacity: tela.total === 0 ? 0.5 : 1,
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                        <Monitor style={{ width: 14, height: 14, color: CORES[i % CORES.length] }} />
-                        <p style={{ margin: 0, fontSize: 11, color: '#6b7280', lineHeight: 1.3 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        <Monitor style={{ width: 12, height: 12, color: CORES[i % CORES.length] }} />
+                        <p style={{ margin: 0, fontSize: 10, color: '#6b7280', lineHeight: 1.3 }}>
                           {tela.nome}
                         </p>
                       </div>
-                      <p style={{ margin: 0, fontSize: 26, fontWeight: 800, color: CORES[i % CORES.length] }}>
+                      <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: CORES[i % CORES.length] }}>
                         {tela.total.toLocaleString('pt-BR')}
                       </p>
-                      <p style={{ margin: 0, fontSize: 11, color: '#9ca3af' }}>exibições</p>
+                      <p style={{ margin: 0, fontSize: 10, color: '#9ca3af' }}>exibições</p>
                     </div>
                   ))}
                 </div>
@@ -500,18 +500,18 @@ export default function GerarRelatorioPage() {
             )}
 
             {/* Rodapé */}
-            <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+            <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 30, height: 30, borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/pulse-logo.png?v=2" alt="Pulse" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#111827' }}>Pulse Marketing Indoor</p>
-                  <p style={{ margin: 0, fontSize: 11, color: '#9ca3af' }}>Quem é visto é lembrado.</p>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#111827' }}>Pulse Marketing Indoor</p>
+                  <p style={{ margin: 0, fontSize: 10, color: '#9ca3af' }}>Quem é visto é lembrado.</p>
                 </div>
               </div>
-              <p style={{ margin: 0, fontSize: 11, color: '#9ca3af' }}>Relatório gerado em {dados.dataGeracao}</p>
+              <p style={{ margin: 0, fontSize: 10, color: '#9ca3af' }}>Relatório gerado em {dados.dataGeracao}</p>
             </div>
           </div>
         </div>
