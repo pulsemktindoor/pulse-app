@@ -471,7 +471,7 @@ export default function GerarRelatorioPage() {
                   Exibições por tela — {dados.periodoLabel}
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
-                  {dados.telasDados.map((tela, i) => (
+                  {dados.telasDados.filter(t => t.total > 0).map((tela, i) => (
                     <div
                       key={tela.nome}
                       style={{
