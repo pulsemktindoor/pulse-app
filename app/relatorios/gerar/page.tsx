@@ -164,7 +164,8 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
   }
 
   // Linhas com nome = telas; linha sem nome = totais
-  const telaRows = rows.filter(r => r.nome !== '')
+  // Filtra ruído do rodapé/cabeçalho do PDF (ex: "1 / 2", datas) que gera segmentos com poucos números
+  const telaRows = rows.filter(r => r.nome !== '' && r.nums.length === rowSize)
   const totalsRow = rows.find(r => r.nome === '')
 
   const telasDados: TelaDado[] = telaRows
