@@ -190,7 +190,7 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
   return { cliente, periodoLabel, dataGeracao, datas, nDias, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
 }
 
-const CORES = ['#2563eb', '#2563eb', '#059669', '#d97706', '#dc2626']
+const CORES = ['#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626']
 
 // Gráfico SVG puro — escala 100% via viewBox, funciona perfeitamente no PDF
 function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number }> }) {
