@@ -246,7 +246,7 @@ const s = StyleSheet.create({
   assinaturas: {
     flexDirection: 'row',
     gap: 30,
-    marginTop: 18,
+    marginTop: 40,
     paddingTop: 18,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
