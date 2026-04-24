@@ -534,7 +534,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                       <Text style={s.negrito}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
                       {', que deverá ser repassado à '}
                       <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                      {' pessoalmente, por boleto ou através de depósito bancário/PIX, mediante emissão de recibo.'}
+                      {' por boleto ou PIX.'}
                     </Text>
                   </>
                 ) : (
