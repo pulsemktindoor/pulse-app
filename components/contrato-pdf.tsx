@@ -950,7 +950,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
           {contrato.tipo === 'corporativa' && (
             <Text style={s.dataInstalacao}>Data de Instalação: _______ / _______ / _____________.</Text>
           )}
-          <Text style={s.dataLocal}>Blumenau/SC, _______ de ________________________ de _____________.</Text>
+          <Text style={s.dataLocal}>{format(new Date(), "'Blumenau/SC,' dd 'de' MMMM 'de' yyyy'.'", { locale: ptBR })}</Text>
 
           <View style={s.assinaturas}>
             <View style={s.assinaturaBox}>
