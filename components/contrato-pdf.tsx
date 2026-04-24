@@ -259,6 +259,7 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: TEXT,
     width: '100%',
+    marginTop: 40,
     marginBottom: 5,
   },
   assinaturaLabel: {
@@ -301,6 +302,12 @@ const s = StyleSheet.create({
 
 function fmtData(d: string) {
   return format(parseISO(d), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
+}
+function fmtCnpjCpf(v: string) {
+  const d = v.replace(/\D/g, '')
+  if (d.length === 14) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+  if (d.length === 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+  return v
 }
 function fmtMoeda(v: number) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -429,7 +436,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 {contrato.cnpj_cpf ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>CNPJ / CPF</Text>
-                    <Text style={s.campoValorNormal}>{contrato.cnpj_cpf}</Text>
+                    <Text style={s.campoValorNormal}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text>
                   </View>
                 ) : null}
                 {endAnunciante ? (
@@ -962,7 +969,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
               <View style={s.assinaturaLinha} />
               <Text style={s.assinaturaLabel}>{contrato.nome_empresa.toUpperCase()}</Text>
               {contrato.cnpj_cpf ? (
-                <Text style={s.assinaturaDoc}>{contrato.cnpj_cpf}</Text>
+                <Text style={s.assinaturaDoc}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text>
               ) : null}
             </View>
           </View>
