@@ -309,6 +309,12 @@ function fmtCnpjCpf(v: string) {
   if (d.length === 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
   return v
 }
+function fmtTelefone(v: string) {
+  const d = v.replace(/\D/g, '')
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+  return v
+}
 function fmtMoeda(v: number) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
@@ -345,11 +351,15 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
   const endAnunciante = [
     contrato.endereco,
     contrato.numero ? `nº ${contrato.numero}` : null,
-    contrato.bairro,
     contrato.complemento,
   ].filter(Boolean).join(', ')
 
   const cidadeAnunciante = [contrato.cidade, contrato.uf].filter(Boolean).join(' / ')
+
+  const bairroCidadeAnunciante = [
+    contrato.bairro,
+    cidadeAnunciante,
+  ].filter(Boolean).join(' — ')
 
   return (
     <Document>
@@ -445,10 +455,10 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                     <Text style={s.campoValorNormal}>{endAnunciante}</Text>
                   </View>
                 ) : null}
-                {cidadeAnunciante ? (
+                {bairroCidadeAnunciante ? (
                   <View style={s.campoRow}>
-                    <Text style={s.campoLabel}>Cidade/UF</Text>
-                    <Text style={s.campoValorNormal}>{cidadeAnunciante}</Text>
+                    <Text style={s.campoLabel}>Bairro/Cidade</Text>
+                    <Text style={s.campoValorNormal}>{bairroCidadeAnunciante}</Text>
                   </View>
                 ) : null}
                 {contrato.cep ? (
@@ -460,7 +470,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 {contrato.contato ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>Contato</Text>
-                    <Text style={s.campoValorNormal}>{contrato.contato}</Text>
+                    <Text style={s.campoValorNormal}>{fmtTelefone(contrato.contato)}</Text>
                   </View>
                 ) : null}
               </View>
