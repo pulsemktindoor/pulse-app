@@ -107,13 +107,13 @@ export default function Dashboard() {
     }
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
-    // Verifica se existe relatorio deste cliente nos últimos 2 meses (por mes_referencia OU created_at)
+    // Verifica se já existe relatório deste cliente para o período atual
+    // Usa mes_referencia quando disponível (preferencial); created_at só como fallback para relatórios antigos sem mes_referencia
     const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.cliente_id !== c.id) return false
-      const porMes = r.mes_referencia && parseISO(r.mes_referencia) >= cutoff
-      const porCriacao = r.created_at && new Date(r.created_at) >= cutoff
-      return porMes || porCriacao
+      if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
+      return new Date(r.created_at) >= cutoff
     })
     return !jaTemRelatorio
   })
@@ -126,9 +126,8 @@ export default function Dashboard() {
     const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.parceiro_id !== p.id) return false
-      const porMes = r.mes_referencia && parseISO(r.mes_referencia) >= cutoff
-      const porCriacao = r.created_at && new Date(r.created_at) >= cutoff
-      return porMes || porCriacao
+      if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
+      return new Date(r.created_at) >= cutoff
     })
     return !jaTemRelatorio
   })
