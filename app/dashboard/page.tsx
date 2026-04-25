@@ -6,7 +6,7 @@ import { Cliente } from '@/lib/supabase/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User } from 'lucide-react'
+import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User, Ban } from 'lucide-react'
 import { format, differenceInDays, parseISO, startOfMonth, addMonths, subMonths, getDate, getDaysInMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
@@ -77,6 +77,21 @@ export default function Dashboard() {
       toast.success('Marcado como enviado!')
       loadData()
     }
+  }
+
+  async function pularMes(clienteId: string | null, parceiroId: string | null) {
+    const mesRef = format(startOfMonth(subMonths(hoje, 1)), 'yyyy-MM-dd')
+    const { error } = await supabase.from('relatorios').insert({
+      cliente_id: clienteId,
+      parceiro_id: parceiroId,
+      mes_referencia: mesRef,
+      total_exibicoes: null,
+      media_diaria: null,
+      enviado: true,
+      data_envio: new Date().toISOString(),
+    })
+    if (error) toast.error('Erro ao dispensar')
+    else { toast.success('Relatório dispensado para este mês'); loadData() }
   }
 
   // Clientes com contrato vencendo nos próximos 30 dias ou já vencido
@@ -165,60 +180,104 @@ export default function Dashboard() {
       </div>
 
       {/* Alertas do dia — destaque */}
-      {(clientesComRelatorioHoje.length > 0 || parceirosComRelatorioHoje.length > 0 || contratosAlerta.filter(c => c.dias <= 0).length > 0) && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Bell className="w-4 h-4 text-red-600" />
-            <p className="font-semibold text-red-800 text-sm">Ação necessária hoje</p>
-          </div>
-          <div className="space-y-2">
-            {clientesComRelatorioHoje.map((c) => (
-              <div key={c.id} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-100">
-                <div>
-                  <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
-                  <p className="text-xs text-zinc-500">Enviar relatório de {format(hoje, 'MMMM/yyyy', { locale: ptBR })}</p>
-                </div>
-                <Link href="/relatorios">
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-xs">
-                    <Send className="w-3 h-3 mr-1" />
-                    Enviar
-                  </Button>
-                </Link>
-              </div>
-            ))}
-            {parceirosComRelatorioHoje.map((p) => (
-              <div key={p.id} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-100">
-                <div className="flex items-center gap-2">
-                  <Handshake className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-zinc-900">{p.nome_local}</p>
-                    <p className="text-xs text-zinc-500">Gerar relatório do parceiro</p>
+      {(clientesComRelatorioHoje.length > 0 || parceirosComRelatorioHoje.length > 0 || contratosAlerta.filter(c => c.dias <= 0).length > 0) && (() => {
+        const temAtrasado =
+          clientesComRelatorioHoje.some(c => (c.dia_envio_relatorio ?? 0) < diaHoje) ||
+          parceirosComRelatorioHoje.some(p => (p.dia_envio_relatorio ?? 0) < diaHoje)
+        const boxCls = temAtrasado
+          ? 'bg-red-50 border-red-200'
+          : 'bg-amber-50 border-amber-200'
+        const iconCls = temAtrasado ? 'text-red-600' : 'text-amber-600'
+        const titleCls = temAtrasado ? 'text-red-800' : 'text-amber-800'
+        return (
+          <div className={`mb-6 border rounded-xl p-4 ${boxCls}`}>
+            <div className="flex items-center gap-2 mb-3">
+              <Bell className={`w-4 h-4 ${iconCls}`} />
+              <p className={`font-semibold text-sm ${titleCls}`}>Ação necessária hoje</p>
+            </div>
+            <div className="space-y-2">
+              {clientesComRelatorioHoje.map((c) => {
+                const atraso = diaHoje - (c.dia_envio_relatorio ?? 0)
+                const atrasado = atraso > 0
+                return (
+                  <div key={c.id} className={`flex items-center justify-between rounded-lg px-3 py-2 border ${atrasado ? 'bg-white border-red-100' : 'bg-white border-amber-100'}`}>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
+                        {atrasado
+                          ? <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">{atraso}d atrasado</span>
+                          : <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">Hoje</span>
+                        }
+                      </div>
+                      <p className="text-xs text-zinc-500">Relatório de {format(subMonths(hoje, 1), 'MMMM/yyyy', { locale: ptBR })}</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" variant="outline"
+                        className="text-xs h-7 px-2 text-zinc-500 border-zinc-200 hover:bg-zinc-50"
+                        onClick={() => pularMes(c.id, null)}
+                        title="Dispensar este mês">
+                        <Ban className="w-3 h-3" />
+                      </Button>
+                      <Link href="/relatorios">
+                        <Button size="sm" className={`text-xs h-7 ${atrasado ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-500 hover:bg-amber-600'}`}>
+                          <Send className="w-3 h-3 mr-1" />Enviar
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
+                )
+              })}
+              {parceirosComRelatorioHoje.map((p) => {
+                const atraso = diaHoje - (p.dia_envio_relatorio ?? 0)
+                const atrasado = atraso > 0
+                return (
+                  <div key={p.id} className={`flex items-center justify-between rounded-lg px-3 py-2 border ${atrasado ? 'bg-white border-red-100' : 'bg-white border-amber-100'}`}>
+                    <div className="flex items-center gap-2">
+                      <Handshake className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-zinc-900">{p.nome_local}</p>
+                          {atrasado
+                            ? <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded font-medium">{atraso}d atrasado</span>
+                            : <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-medium">Hoje</span>
+                          }
+                        </div>
+                        <p className="text-xs text-zinc-500">Relatório de {format(subMonths(hoje, 1), 'MMMM/yyyy', { locale: ptBR })}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" variant="outline"
+                        className="text-xs h-7 px-2 text-zinc-500 border-zinc-200 hover:bg-zinc-50"
+                        onClick={() => pularMes(null, p.id)}
+                        title="Dispensar este mês">
+                        <Ban className="w-3 h-3" />
+                      </Button>
+                      <Link href="/relatorios/gerar">
+                        <Button size="sm" className={`text-xs h-7 ${atrasado ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-500 hover:bg-amber-600'}`}>
+                          <FileText className="w-3 h-3 mr-1" />Gerar
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+              {contratosAlerta.filter(c => c.dias <= 0).map((c) => (
+                <div key={c.id} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-100">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
+                    <p className="text-xs text-zinc-500">Contrato vencido há {Math.abs(c.dias)} dia(s)</p>
+                  </div>
+                  <Link href="/clientes">
+                    <Button size="sm" variant="outline" className="text-red-700 border-red-200 text-xs">
+                      Renovar
+                    </Button>
+                  </Link>
                 </div>
-                <Link href="/relatorios/gerar">
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700 text-xs">
-                    <FileText className="w-3 h-3 mr-1" />
-                    Gerar
-                  </Button>
-                </Link>
-              </div>
-            ))}
-            {contratosAlerta.filter(c => c.dias <= 0).map((c) => (
-              <div key={c.id} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-red-100">
-                <div>
-                  <p className="text-sm font-medium text-zinc-900">{c.nome_empresa}</p>
-                  <p className="text-xs text-zinc-500">Contrato vencido há {Math.abs(c.dias)} dia(s)</p>
-                </div>
-                <Link href="/clientes">
-                  <Button size="sm" variant="outline" className="text-red-700 border-red-200 text-xs">
-                    Renovar
-                  </Button>
-                </Link>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Cards de resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
