@@ -327,9 +327,12 @@ function fmtDuracao(m: number) {
 interface Props {
   contrato: Contrato
   logoUrl?: string
+  semDados?: boolean
 }
 
-export function ContratoPDF({ contrato, logoUrl }: Props) {
+const B = (n = 28) => '_'.repeat(n)
+
+export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
   const ano = new Date(contrato.created_at).getFullYear()
   const numContrato = contrato.numero_contrato
     ? `Nº ${String(contrato.numero_contrato).padStart(4, '0')}/${ano}`
@@ -386,11 +389,11 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
         <View style={s.infoStrip}>
           <View style={s.infoItem}>
             <Text style={s.infoLabel}>Início: </Text>
-            <Text style={s.infoValue}>{fmtData(contrato.data_inicio)}</Text>
+            <Text style={s.infoValue}>{semDados ? B(18) : fmtData(contrato.data_inicio)}</Text>
           </View>
           <View style={s.infoItem}>
             <Text style={s.infoLabel}>Término: </Text>
-            <Text style={s.infoValue}>{fmtData(contrato.data_fim)}</Text>
+            <Text style={s.infoValue}>{semDados ? B(18) : fmtData(contrato.data_fim)}</Text>
           </View>
           <View style={s.infoItem}>
             <Text style={s.infoLabel}>Duração: </Text>
@@ -441,36 +444,36 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 <Text style={s.parteCardTitulo}>{parteLabel}</Text>
                 <View style={s.campoRow}>
                   <Text style={s.campoLabel}>Razão Social</Text>
-                  <Text style={s.campoValor}>{contrato.nome_empresa || '—'}</Text>
+                  <Text style={s.campoValor}>{semDados ? B() : (contrato.nome_empresa || '—')}</Text>
                 </View>
-                {contrato.cnpj_cpf ? (
+                {(semDados || contrato.cnpj_cpf) ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>CNPJ / CPF</Text>
-                    <Text style={s.campoValorNormal}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text>
+                    <Text style={s.campoValorNormal}>{semDados ? B() : fmtCnpjCpf(contrato.cnpj_cpf!)}</Text>
                   </View>
                 ) : null}
-                {endAnunciante ? (
+                {(semDados || endAnunciante) ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>Endereço</Text>
-                    <Text style={s.campoValorNormal}>{endAnunciante}</Text>
+                    <Text style={s.campoValorNormal}>{semDados ? B() : endAnunciante}</Text>
                   </View>
                 ) : null}
-                {bairroCidadeAnunciante ? (
+                {(semDados || bairroCidadeAnunciante) ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>Bairro/Cidade</Text>
-                    <Text style={s.campoValorNormal}>{bairroCidadeAnunciante}</Text>
+                    <Text style={s.campoValorNormal}>{semDados ? B() : bairroCidadeAnunciante}</Text>
                   </View>
                 ) : null}
-                {contrato.cep ? (
+                {(semDados || contrato.cep) ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>CEP</Text>
-                    <Text style={s.campoValorNormal}>{contrato.cep}</Text>
+                    <Text style={s.campoValorNormal}>{semDados ? B(14) : contrato.cep}</Text>
                   </View>
                 ) : null}
-                {contrato.contato ? (
+                {(semDados || contrato.contato) ? (
                   <View style={s.campoRow}>
                     <Text style={s.campoLabel}>Contato</Text>
-                    <Text style={s.campoValorNormal}>{fmtTelefone(contrato.contato)}</Text>
+                    <Text style={s.campoValorNormal}>{semDados ? B() : fmtTelefone(contrato.contato!)}</Text>
                   </View>
                 ) : null}
               </View>
@@ -494,15 +497,15 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                 <Text style={s.clausulaTexto}>
                   {'1.1  O presente contrato tem por objeto a exibição do comercial da empresa '}
-                  <Text style={s.negrito}>{contrato.nome_empresa}</Text>
+                  <Text style={s.negrito}>{semDados ? 'ANUNCIANTE' : contrato.nome_empresa}</Text>
                   {' nos monitores de mídia indoor da '}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {', pelo período de '}
                   <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
                   {', com início em '}
-                  <Text style={s.negrito}>{fmtData(contrato.data_inicio)}</Text>
+                  <Text style={s.negrito}>{semDados ? B(18) : fmtData(contrato.data_inicio)}</Text>
                   {' e encerramento em '}
-                  <Text style={s.negrito}>{fmtData(contrato.data_fim)}</Text>
+                  <Text style={s.negrito}>{semDados ? B(18) : fmtData(contrato.data_fim)}</Text>
                   {'.'}
                 </Text>
               </View>
@@ -531,15 +534,13 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
 
               <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – DO INVESTIMENTO</Text>
-                {contrato.valor_mensal ? (
+                {(semDados || contrato.valor_mensal) ? (
                   <>
                     <View style={s.valorBox}>
                       <View>
                         <Text style={s.valorLabel}>Investimento mensal</Text>
-                        <Text style={s.valorNumero}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
-                        {contrato.dia_pagamento ? (
-                          <Text style={s.valorSub}>Vencimento: todo dia {contrato.dia_pagamento} do mês</Text>
-                        ) : null}
+                        <Text style={s.valorNumero}>R$ {semDados ? B(20) : fmtMoeda(contrato.valor_mensal!)}</Text>
+                        <Text style={s.valorSub}>Vencimento: todo dia {semDados ? B(5) : contrato.dia_pagamento} do mês</Text>
                       </View>
                     </View>
                     <Text style={s.clausulaTexto}>
@@ -548,7 +549,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                       {', o '}
                       <Text style={s.negrito}>ANUNCIANTE</Text>
                       {' fará o investimento mensal no valor fixo de '}
-                      <Text style={s.negrito}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
+                      <Text style={s.negrito}>R$ {semDados ? B(15) : fmtMoeda(contrato.valor_mensal!)}</Text>
                       {', que deverá ser repassado à '}
                       <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                       {' por boleto ou PIX.'}
@@ -592,7 +593,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                   {'5.1  O '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
                   {' compromete-se a pagar o valor contratado, sempre na data estabelecida'}
-                  {contrato.dia_pagamento ? ` (todo dia ${contrato.dia_pagamento} de cada mês)` : ''}
+                  {semDados ? ` (todo dia _____ de cada mês)` : contrato.dia_pagamento ? ` (todo dia ${contrato.dia_pagamento} de cada mês)` : ''}
                   {', até o encerramento do contrato.'}
                 </Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
@@ -661,7 +662,7 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                   {', pelo prazo de '}
                   <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
                   {', com início em '}
-                  <Text style={s.negrito}>{fmtData(contrato.data_inicio)}</Text>
+                  <Text style={s.negrito}>{semDados ? B(18) : fmtData(contrato.data_inicio)}</Text>
                   {'.'}
                 </Text>
               </View>
@@ -798,12 +799,13 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
                       ? '1.1  Instalação de 01 (uma) tela de Marketing Indoor e 01 (uma) tela de TV Corporativa no estabelecimento do '
                       : '1.1  Instalação de 01 (uma) tela de TV Corporativa no estabelecimento do '}
                     <Text style={s.negrito}>CONTRATADO</Text>
-                    {' ('}
-                    <Text style={s.negrito}>{contrato.nome_empresa}</Text>
-                    {'), pelo prazo de '}
+                    {semDados ? '' : ' ('}
+                    {semDados ? '' : <Text style={s.negrito}>{contrato.nome_empresa}</Text>}
+                    {semDados ? '' : ')'}
+                    {', pelo prazo de '}
                     <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
                     {', com início em '}
-                    <Text style={s.negrito}>{fmtData(contrato.data_inicio)}</Text>
+                    <Text style={s.negrito}>{semDados ? B(18) : fmtData(contrato.data_inicio)}</Text>
                     {'.'}
                   </Text>
                   <Text style={s.clausulaTexto}>
@@ -893,24 +895,22 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
 
                 <View style={s.clausula} wrap={false}>
                   <Text style={s.clausulaTitulo}>{nValor}. CLÁUSULA {ord[nValor]} – DO VALOR E DO PAGAMENTO (TELA CORPORATIVA)</Text>
-                  {contrato.valor_mensal ? (
+                  {(semDados || contrato.valor_mensal) ? (
                     <>
                       <View style={s.valorBox}>
                         <View>
                           <Text style={s.valorLabel}>Valor mensal — Tela Corporativa</Text>
-                          <Text style={s.valorNumero}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
-                          {contrato.dia_pagamento ? (
-                            <Text style={s.valorSub}>Vencimento: todo dia {contrato.dia_pagamento} do mês</Text>
-                          ) : null}
+                          <Text style={s.valorNumero}>R$ {semDados ? B(20) : fmtMoeda(contrato.valor_mensal!)}</Text>
+                          <Text style={s.valorSub}>Vencimento: todo dia {semDados ? B(5) : contrato.dia_pagamento} do mês</Text>
                         </View>
                       </View>
                       <Text style={s.clausulaTexto}>
                         {`${nValor}.1  O `}
                         <Text style={s.negrito}>CONTRATADO</Text>
                         {' pagará mensalmente '}
-                        <Text style={s.negrito}>R$ {fmtMoeda(contrato.valor_mensal)}</Text>
+                        <Text style={s.negrito}>R$ {semDados ? B(15) : fmtMoeda(contrato.valor_mensal!)}</Text>
                         {' referente à Tela Corporativa, com vencimento todo dia '}
-                        <Text style={s.negrito}>{contrato.dia_pagamento || '___'}</Text>
+                        <Text style={s.negrito}>{semDados ? '_____' : (contrato.dia_pagamento || '___')}</Text>
                         {' de cada mês, mediante emissão de recibo pela '}
                         <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                         {'.'}
@@ -977,8 +977,10 @@ export function ContratoPDF({ contrato, logoUrl }: Props) {
             </View>
             <View style={s.assinaturaBox}>
               <View style={s.assinaturaLinha} />
-              <Text style={s.assinaturaLabel}>{contrato.nome_empresa.toUpperCase()}</Text>
-              {contrato.cnpj_cpf ? (
+              <Text style={s.assinaturaLabel}>{semDados ? parteLabel.toUpperCase() : contrato.nome_empresa.toUpperCase()}</Text>
+              {semDados ? (
+                <Text style={s.assinaturaDoc}>CNPJ / CPF: {B(25)}</Text>
+              ) : contrato.cnpj_cpf ? (
                 <Text style={s.assinaturaDoc}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text>
               ) : null}
             </View>

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User } from 'lucide-react'
-import { format, differenceInDays, parseISO, startOfMonth, subMonths, getDate, getDaysInMonth } from 'date-fns'
+import { format, differenceInDays, parseISO, startOfMonth, addMonths, subMonths, getDate, getDaysInMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -96,7 +96,15 @@ export default function Dashboard() {
     // Ignora clientes com contrato encerrado
     if (c.data_fim_contrato && differenceInDays(parseISO(c.data_fim_contrato), hoje) < 0) return false
     // Ignora clientes que começaram este mês (primeiro relatório é no mês seguinte)
-    if (c.data_inicio_contrato && parseISO(c.data_inicio_contrato) >= mesAtualInicio) return false
+    // Exceto se o contrato também termina este mês (plano mensal — único mês)
+    // Usa created_at como fallback quando data_inicio_contrato não foi preenchida
+    const iniciou = c.data_inicio_contrato
+      ? parseISO(c.data_inicio_contrato)
+      : new Date(c.created_at)
+    if (iniciou >= mesAtualInicio) {
+      const fimMesAtual = addMonths(mesAtualInicio, 1)
+      if (!c.data_fim_contrato || parseISO(c.data_fim_contrato) >= fimMesAtual) return false
+    }
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
     // Verifica se existe relatorio deste cliente nos últimos 2 meses (por mes_referencia OU created_at)

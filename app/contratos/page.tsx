@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import { Contrato } from '@/lib/supabase/types'
+import { Contrato, ContratoTipo } from '@/lib/supabase/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select'
 import {
   Plus, Search, FileText, Download, Send, CheckCircle2,
-  Trash2, Building2, Pencil, Undo2,
+  Trash2, Building2, Pencil, Undo2, Printer,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -70,12 +70,33 @@ type EditForm = {
   locais_selecionados: string[]
 }
 
+function criarModeloBranco(tipo: ContratoTipo, duracao: number): Contrato {
+  const hoje = new Date().toISOString().split('T')[0]
+  return {
+    id: '', numero_contrato: 0, tipo,
+    cliente_id: null, parceiro_id: null,
+    nome_empresa: '', cnpj_cpf: null,
+    endereco: null, numero: null, bairro: null, complemento: null,
+    cidade: null, uf: null, cep: null, contato: null,
+    locais_selecionados: [], duracao_meses: duracao,
+    data_inicio: hoje, data_fim: hoje,
+    valor_mensal: null, dia_pagamento: null,
+    horario_semana_inicio: null, horario_semana_fim: null,
+    horario_fds_inicio: null, horario_fds_fim: null,
+    dias_semana: [], status: 'gerado',
+    created_at: new Date().toISOString(),
+  }
+}
+
 export default function ContratosPage() {
   const [contratos, setContratos] = useState<Contrato[]>([])
   const [busca, setBusca] = useState('')
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState<Contrato | null>(null)
   const [salvando, setSalvando] = useState(false)
+  const [modeloBrancoOpen, setModeloBrancoOpen] = useState(false)
+  const [modeloBrancoTipo, setModeloBrancoTipo] = useState<ContratoTipo>('anuncio')
+  const [modeloBrancoDuracao, setModeloBrancoDuracao] = useState(12)
   const [editForm, setEditForm] = useState<EditForm>({
     tipo: 'anuncio', nome_empresa: '', cnpj_cpf: '', endereco: '', numero: '',
     bairro: '', complemento: '', cidade: 'Blumenau', uf: 'SC', cep: '', contato: '',
@@ -191,11 +212,16 @@ export default function ContratosPage() {
             {totalPendentes > 0 && ` · ${totalPendentes} pendente(s) de assinatura`}
           </p>
         </div>
-        <Link href="/contratos/novo">
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" />Novo contrato
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setModeloBrancoOpen(true)}>
+            <Printer className="w-4 h-4 mr-2" />Modelo em Branco
           </Button>
-        </Link>
+          <Link href="/contratos/novo">
+            <Button className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-2" />Novo contrato
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="relative mb-6">
@@ -316,6 +342,57 @@ export default function ContratosPage() {
           ))}
         </div>
       )}
+
+      {/* ── DIALOG MODELO EM BRANCO ── */}
+      <Dialog open={modeloBrancoOpen} onOpenChange={setModeloBrancoOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Imprimir Modelo em Branco</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <Label className="mb-2 block">Tipo de contrato</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['anuncio', 'parceria', 'corporativa'] as const).map((t) => (
+                  <button key={t} type="button"
+                    onClick={() => setModeloBrancoTipo(t)}
+                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${modeloBrancoTipo === t ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 text-zinc-600'}`}>
+                    {TIPO_LABEL[t]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block">Duração</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[6, 12].map((d) => (
+                  <button key={d} type="button"
+                    onClick={() => setModeloBrancoDuracao(d)}
+                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${modeloBrancoDuracao === d ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 text-zinc-600'}`}>
+                    {d} meses
+                  </button>
+                ))}
+              </div>
+            </div>
+            <PDFDownloadLink
+              document={<ContratoPDF
+                contrato={criarModeloBranco(modeloBrancoTipo, modeloBrancoDuracao)}
+                logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''}
+                semDados
+              />}
+              fileName={`modelo-branco-${modeloBrancoTipo}-${modeloBrancoDuracao}m.pdf`}
+            >
+              {({ loading: pdfLoading }: { loading: boolean }) => (
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" disabled={pdfLoading}
+                  onClick={() => setModeloBrancoOpen(false)}>
+                  <Download className="w-4 h-4 mr-2" />
+                  {pdfLoading ? 'Gerando...' : 'Baixar PDF'}
+                </Button>
+              )}
+            </PDFDownloadLink>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── DIALOG DE EDIÇÃO ── */}
       <Dialog open={!!editando} onOpenChange={(open) => { if (!open) setEditando(null) }}>

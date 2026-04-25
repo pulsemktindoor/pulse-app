@@ -59,7 +59,7 @@ export default function ParceirosPage() {
   useEffect(() => { loadParceiros() }, [])
 
   async function loadParceiros() {
-    const { data } = await supabase.from('parceiros').select('*').order('nome_local')
+    const { data } = await supabase.from('parceiros').select('*').order('data_fim_contrato', { ascending: true, nullsFirst: false })
     if (data) setParceiros(data)
     setLoading(false)
   }

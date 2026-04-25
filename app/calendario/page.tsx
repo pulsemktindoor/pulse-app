@@ -72,8 +72,11 @@ export default function CalendarioPage() {
       if (c.dia_envio_relatorio) {
         const fimContrato = c.data_fim_contrato ? parseISO(c.data_fim_contrato) : null
         if (fimContrato && fimContrato < startOfMonth(mesAtual)) return
-        const inicioContrato = c.data_inicio_contrato ? parseISO(c.data_inicio_contrato) : null
-        if (inicioContrato && inicioContrato >= startOfMonth(mesAtual)) return
+        const iniciou = c.data_inicio_contrato ? parseISO(c.data_inicio_contrato) : new Date(c.created_at)
+        if (iniciou >= startOfMonth(mesAtual)) {
+          // Permite se o contrato também termina neste mês (plano mensal — único mês)
+          if (!fimContrato || fimContrato >= addMonths(startOfMonth(mesAtual), 1)) return
+        }
 
         const enviado = relatorios.some(r => r.cliente_id === c.id && r.mes_referencia === mesRef && r.enviado)
         const pendente = relatorios.some(r => r.cliente_id === c.id && r.mes_referencia === mesRef && !r.enviado)
@@ -125,8 +128,10 @@ export default function CalendarioPage() {
       if (!c.dia_envio_relatorio) return
       const fimContrato = c.data_fim_contrato ? parseISO(c.data_fim_contrato) : null
       if (fimContrato && fimContrato < startOfMonth(mesAtual)) return
-      const inicioContrato = c.data_inicio_contrato ? parseISO(c.data_inicio_contrato) : null
-      if (inicioContrato && inicioContrato >= startOfMonth(mesAtual)) return
+      const iniciou = c.data_inicio_contrato ? parseISO(c.data_inicio_contrato) : new Date(c.created_at)
+      if (iniciou >= startOfMonth(mesAtual)) {
+        if (!fimContrato || fimContrato >= addMonths(startOfMonth(mesAtual), 1)) return
+      }
 
       const rel = relatorios.find(r => r.cliente_id === c.id && r.mes_referencia === mesRef)
       itens.push({

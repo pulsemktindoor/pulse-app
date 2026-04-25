@@ -76,7 +76,7 @@ export default function ClientesPage() {
   }, [])
 
   async function loadClientes() {
-    const { data, error } = await supabase.from('clientes').select('*').order('nome_empresa')
+    const { data, error } = await supabase.from('clientes').select('*').order('data_fim_contrato', { ascending: true, nullsFirst: false })
     if (error) {
       toast.error('Erro ao carregar clientes: ' + error.message)
     }
