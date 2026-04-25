@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.className} bg-zinc-50`}>
         <AppShell>{children}</AppShell>
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   )
