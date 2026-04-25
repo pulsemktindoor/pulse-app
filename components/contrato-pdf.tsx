@@ -319,9 +319,13 @@ function fmtMoeda(v: number) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 function fmtDuracao(m: number) {
-  if (m === 6) return '6 (seis) meses'
-  if (m === 12) return '12 (doze) meses'
-  return `${m} meses`
+  const ext: Record<number, string> = {
+    1: 'um', 2: 'dois', 3: 'três', 4: 'quatro', 5: 'cinco',
+    6: 'seis', 7: 'sete', 8: 'oito', 9: 'nove', 10: 'dez',
+    11: 'onze', 12: 'doze', 18: 'dezoito', 24: 'vinte e quatro',
+  }
+  const por = ext[m]
+  return por ? `${m} (${por}) meses` : `${m} meses`
 }
 
 interface Props {
