@@ -495,7 +495,15 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
           {/* ══════════════════════════════════════
               CONTRATO ANÚNCIO
           ══════════════════════════════════════ */}
-          {contrato.tipo === 'anuncio' && (
+          {contrato.tipo === 'anuncio' && (() => {
+            const exclusivo = !!contrato.exclusivo
+            const nObrPulse  = 4
+            const nExcl      = exclusivo ? 5 : null
+            const nObrAnunc  = exclusivo ? 6 : 5
+            const nInadimpl  = exclusivo ? 7 : 6
+            const nVig       = exclusivo ? 8 : 7
+            const ord = ['','PRIMEIRA','SEGUNDA','TERCEIRA','QUARTA','QUINTA','SEXTA','SÉTIMA','OITAVA','NONA']
+            return (
             <>
               <View style={s.clausula} wrap={false}>
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
@@ -567,23 +575,23 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
               </View>
 
               <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
+                <Text style={s.clausulaTitulo}>{nObrPulse}. CLÁUSULA {ord[nObrPulse]} – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'4.1  A '}
+                  {`${nObrPulse}.1  A `}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {' compromete-se, a partir da data de início do anúncio, a exibir a propaganda do '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
                   {' nas telas estabelecidas.'}
                 </Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'4.2  É dever da '}
+                  {`${nObrPulse}.2  É dever da `}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {' informar o '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
                   {' sobre possíveis problemas, como: mídia incompatível com as telas, eventuais problemas técnicos com a exibição, dentre outros.'}
                 </Text>
                 <Text style={s.clausulaTexto}>
-                  {'4.3  A '}
+                  {`${nObrPulse}.3  A `}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {' fica expressamente proibida de alterar o conteúdo da mídia do '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
@@ -591,17 +599,44 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </Text>
               </View>
 
+              {exclusivo && nExcl !== null && (
+                <View style={s.clausula} wrap={false}>
+                  <Text style={s.clausulaTitulo}>{nExcl}. CLÁUSULA {ord[nExcl]} – DA EXCLUSIVIDADE DE SEGMENTO</Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {`${nExcl}.1  A `}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' compromete-se a não veicular, nas telas em que o '}
+                    <Text style={s.negrito}>ANUNCIANTE</Text>
+                    {' for exibido, qualquer anúncio de outra empresa que atue no mesmo ramo de atividade'}
+                    {contrato.ramo_exclusividade ? ` (${contrato.ramo_exclusividade})` : ''}
+                    {', durante toda a vigência deste contrato.'}
+                  </Text>
+                  <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                    {`${nExcl}.2  A exclusividade de segmento garantida nesta cláusula aplica-se exclusivamente às telas contratadas pelo `}
+                    <Text style={s.negrito}>ANUNCIANTE</Text>
+                    {', não impedindo a '}
+                    <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                    {' de veicular anúncios do mesmo segmento em outras telas de sua rede.'}
+                  </Text>
+                  <Text style={s.clausulaTexto}>
+                    {`${nExcl}.3  O descumprimento desta cláusula facultará ao `}
+                    <Text style={s.negrito}>ANUNCIANTE</Text>
+                    {' a rescisão imediata deste contrato, sem ônus, além de eventual indenização por perdas e danos.'}
+                  </Text>
+                </View>
+              )}
+
               <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DAS OBRIGAÇÕES DO ANUNCIANTE</Text>
+                <Text style={s.clausulaTitulo}>{nObrAnunc}. CLÁUSULA {ord[nObrAnunc]} – DAS OBRIGAÇÕES DO ANUNCIANTE</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'5.1  O '}
+                  {`${nObrAnunc}.1  O `}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
                   {' compromete-se a pagar o valor contratado, sempre na data estabelecida'}
                   {semDados ? ` (todo dia _____ de cada mês)` : contrato.dia_pagamento ? ` (todo dia ${contrato.dia_pagamento} de cada mês)` : ''}
                   {', até o encerramento do contrato.'}
                 </Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'5.2  O conteúdo da mídia utilizada nas telas da '}
+                  {`${nObrAnunc}.2  O conteúdo da mídia utilizada nas telas da `}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {' é de total responsabilidade do '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
@@ -620,16 +655,16 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
               </View>
 
               <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>6. CLÁUSULA SEXTA – DO INADIMPLEMENTO</Text>
+                <Text style={s.clausulaTitulo}>{nInadimpl}. CLÁUSULA {ord[nInadimpl]} – DO INADIMPLEMENTO</Text>
                 <Text style={s.clausulaTexto}>
-                  6.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do NCPC, para a cobrança do valor devido pela parte inadimplente.
+                  {`${nInadimpl}.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do NCPC, para a cobrança do valor devido pela parte inadimplente.`}
                 </Text>
               </View>
 
               <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>7. CLÁUSULA SÉTIMA – VIGÊNCIA E RESCISÃO</Text>
+                <Text style={s.clausulaTitulo}>{nVig}. CLÁUSULA {ord[nVig]} – VIGÊNCIA E RESCISÃO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {'7.1  A vigência deste contrato iniciará no momento em que a propaganda do '}
+                  {`${nVig}.1  A vigência deste contrato iniciará no momento em que a propaganda do `}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
                   {' for inserida nas telas da '}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
@@ -638,14 +673,15 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   {'.'}
                 </Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  7.2  O não cumprimento do prazo acordado implicará ao <Text style={s.negrito}>ANUNCIANTE</Text> pagar à <Text style={s.negrito}>PULSE MARKETING INDOOR</Text> uma multa de 30% do investimento restante até a data final do contrato.
+                  {`${nVig}.2  O não cumprimento do prazo acordado implicará ao `}<Text style={s.negrito}>ANUNCIANTE</Text>{` pagar à `}<Text style={s.negrito}>PULSE MARKETING INDOOR</Text>{` uma multa de 30% do investimento restante até a data final do contrato.`}
                 </Text>
                 <Text style={s.clausulaTexto}>
-                  7.3  Poderá ser rescindido este contrato nos seguintes casos: A) pelo descumprimento de qualquer cláusula prevista; B) por ajuizamento de ação que afete a credibilidade ou idoneidade de qualquer das partes; C) por pedido de concordata, decretação de falência ou dissolução judicial/extrajudicial de qualquer das partes; D) pela ocorrência comprovada de caso fortuito ou força maior.
+                  {`${nVig}.3  Poderá ser rescindido este contrato nos seguintes casos: A) pelo descumprimento de qualquer cláusula prevista; B) por ajuizamento de ação que afete a credibilidade ou idoneidade de qualquer das partes; C) por pedido de concordata, decretação de falência ou dissolução judicial/extrajudicial de qualquer das partes; D) pela ocorrência comprovada de caso fortuito ou força maior.`}
                 </Text>
               </View>
             </>
-          )}
+            )
+          })()}
 
           {/* ══════════════════════════════════════
               CONTRATO PARCERIA

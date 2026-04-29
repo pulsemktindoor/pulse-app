@@ -49,6 +49,8 @@ interface FormState {
   valor_mensal: string
   dia_pagamento: string
   locais_selecionados: string[]
+  exclusivo: boolean
+  ramo_exclusividade: string
 }
 
 const emptyForm: FormState = {
@@ -70,6 +72,8 @@ const emptyForm: FormState = {
   valor_mensal: '',
   dia_pagamento: '10',
   locais_selecionados: [],
+  exclusivo: false,
+  ramo_exclusividade: '',
 }
 
 export default function NovoContratoPage() {
@@ -153,6 +157,8 @@ export default function NovoContratoPage() {
     dias_semana: [],
     status: 'gerado',
     created_at: new Date().toISOString(),
+    exclusivo: form.exclusivo,
+    ramo_exclusividade: form.ramo_exclusividade || null,
   }
 
   async function salvar() {
@@ -197,7 +203,7 @@ export default function NovoContratoPage() {
       setSalvando(false)
       return
     }
-    setContratoSalvo(data as Contrato)
+    setContratoSalvo({ ...(data as Contrato), exclusivo: form.exclusivo, ramo_exclusividade: form.ramo_exclusividade || null })
     setEtapa(3)
     setSalvando(false)
   }
@@ -272,6 +278,44 @@ export default function NovoContratoPage() {
               ))}
             </div>
           </div>
+
+          {/* Exclusividade — só para anúncio */}
+          {form.tipo === 'anuncio' && (
+            <div>
+              <Label className="mb-2 block">Exclusividade de segmento</Label>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, exclusivo: !form.exclusivo, ramo_exclusividade: form.exclusivo ? '' : form.ramo_exclusividade })}
+                className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+                  form.exclusivo
+                    ? 'border-amber-500 bg-amber-50'
+                    : 'border-zinc-200 hover:border-zinc-300'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
+                    form.exclusivo ? 'bg-amber-500 border-amber-500' : 'border-zinc-300'
+                  }`}>
+                    {form.exclusivo && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-zinc-900">Contrato com exclusividade</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">A Pulse não anunciará concorrentes do mesmo ramo nas telas deste cliente</p>
+                  </div>
+                </div>
+              </button>
+              {form.exclusivo && (
+                <div className="mt-3 space-y-1">
+                  <Label>Ramo de atividade (para constar no contrato)</Label>
+                  <Input
+                    placeholder="Ex: Academia de musculação, Clínica odontológica..."
+                    value={form.ramo_exclusividade}
+                    onChange={(e) => setForm({ ...form, ramo_exclusividade: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Buscar cliente */}
           <div>

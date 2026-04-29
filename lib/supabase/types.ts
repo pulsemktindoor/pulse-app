@@ -167,6 +167,7 @@ export type Database = {
           media_diaria: number | null
           enviado: boolean
           data_envio: string | null
+          num_campanhas: number
           created_at: string
         }
         Insert: {
@@ -177,6 +178,7 @@ export type Database = {
           media_diaria?: number | null
           enviado?: boolean
           data_envio?: string | null
+          num_campanhas?: number
           created_at?: string
         }
         Update: {
@@ -187,6 +189,7 @@ export type Database = {
           media_diaria?: number | null
           enviado?: boolean
           data_envio?: string | null
+          num_campanhas?: number
           created_at?: string
         }
       }
@@ -195,7 +198,10 @@ export type Database = {
 }
 
 export type Cliente = Database['public']['Tables']['clientes']['Row']
-export type Contrato = Database['public']['Tables']['contratos']['Row']
+export type Contrato = Database['public']['Tables']['contratos']['Row'] & {
+  exclusivo?: boolean | null
+  ramo_exclusividade?: string | null
+}
 export type Relatorio = Database['public']['Tables']['relatorios']['Row']
 export type ContratoTipo = 'anuncio' | 'parceria' | 'corporativa'
 export type ContratoStatus = 'gerado' | 'enviado' | 'assinado'
