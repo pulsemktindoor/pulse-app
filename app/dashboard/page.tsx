@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User, Ban } from 'lucide-react'
-import { format, differenceInDays, parseISO, startOfMonth, addMonths, subMonths, getDate, getDaysInMonth } from 'date-fns'
+import { format, differenceInDays, parseISO, startOfMonth, startOfDay, addMonths, subMonths, getDate, getDaysInMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -36,7 +36,7 @@ export default function Dashboard() {
   const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; parceiro_id: string | null; mes_referencia: string; created_at: string }[]>([])
   const [loading, setLoading] = useState(true)
 
-  const hoje = new Date()
+  const hoje = startOfDay(new Date())
   const diaHoje = getDate(hoje)
 
   useEffect(() => {
