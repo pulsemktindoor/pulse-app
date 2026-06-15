@@ -40,11 +40,11 @@ const emptyForm = {
 }
 
 function StatusContrato({ dataFim }: { dataFim: string | null }) {
-  if (!dataFim) return <Badge className="bg-zinc-100 text-zinc-500 hover:bg-zinc-100">Sem data</Badge>
+  if (!dataFim) return <Badge className="bg-white/[0.08] text-zinc-400 hover:bg-white/[0.08]">Sem data</Badge>
   const dias = differenceInDays(parseISO(dataFim), new Date())
   if (dias < 0) return <Badge variant="destructive">Vencido</Badge>
-  if (dias <= 30) return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Vence em {dias}d</Badge>
-  return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ativo</Badge>
+  if (dias <= 30) return <Badge className="bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/20">Vence em {dias}d</Badge>
+  return <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/20">Ativo</Badge>
 }
 
 export default function TvCorporativaPage() {
@@ -127,10 +127,10 @@ export default function TvCorporativaPage() {
     <div className="p-6 md:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">TV Corporativa</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">TV Corporativa</h1>
           <p className="text-zinc-500 text-sm mt-1">
             {tvs.length} contrato(s) · receita{' '}
-            <span className="text-green-600 font-medium">
+            <span className="text-green-400 font-medium">
               R$ {receitaTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
             </span>
           </p>
@@ -146,7 +146,7 @@ export default function TvCorporativaPage() {
           {alertas.map((tv) => {
             const dias = differenceInDays(parseISO(tv.data_fim_contrato!), new Date())
             return (
-              <div key={tv.id} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm border ${dias < 0 ? 'bg-red-50 text-red-800 border-red-200' : 'bg-yellow-50 text-yellow-800 border-yellow-200'}`}>
+              <div key={tv.id} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm border ${dias < 0 ? 'bg-red-500/10 text-red-300 border-red-500/30' : 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30'}`}>
                 <CalendarDays className="w-4 h-4 shrink-0" />
                 <span>
                   <strong>{tv.nome_empresa}</strong> — contrato {dias < 0 ? `vencido há ${Math.abs(dias)} dia(s)` : `vence em ${dias} dia(s)`}
@@ -163,13 +163,13 @@ export default function TvCorporativaPage() {
         <p className="text-zinc-400 text-sm">Carregando...</p>
       ) : tvs.length === 0 ? (
         <div className="text-center py-16">
-          <Tv className="w-12 h-12 text-zinc-200 mx-auto mb-3" />
+          <Tv className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
           <p className="text-zinc-400">Nenhuma TV corporativa cadastrada.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {tvs.map((tv) => (
-            <Card key={tv.id} className="hover:shadow-md transition-shadow">
+            <Card key={tv.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{tv.nome_empresa}</CardTitle>
@@ -178,13 +178,13 @@ export default function TvCorporativaPage() {
                 <p className="text-sm text-zinc-500">{tv.nome_responsavel}</p>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-zinc-600">
-                  <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                <div className="flex items-center gap-2 text-sm text-zinc-400">
+                  <Phone className="w-3.5 h-3.5 text-zinc-500" />
                   <a
                     href={`https://wa.me/55${tv.whatsapp.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="hover:text-green-600 transition-colors"
+                    className="hover:text-green-400 transition-colors"
                   >
                     {tv.whatsapp}
                   </a>
@@ -194,14 +194,14 @@ export default function TvCorporativaPage() {
                 )}
                 {(tv.data_inicio || tv.data_fim_contrato) && (
                   <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <CalendarDays className="w-3.5 h-3.5 text-zinc-400" />
+                    <CalendarDays className="w-3.5 h-3.5 text-zinc-600" />
                     {tv.data_inicio && format(parseISO(tv.data_inicio), 'dd/MM/yyyy')}
                     {tv.data_inicio && tv.data_fim_contrato && ' → '}
                     {tv.data_fim_contrato && format(parseISO(tv.data_fim_contrato), 'dd/MM/yyyy')}
                   </div>
                 )}
-                <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-                  <p className="text-lg font-bold text-green-600">
+                <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between">
+                  <p className="text-lg font-bold text-green-400">
                     R$ {tv.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
                   </p>
                 </div>
@@ -209,7 +209,7 @@ export default function TvCorporativaPage() {
                   <Button size="sm" variant="outline" className="flex-1 text-xs h-8" onClick={() => abrirEdicao(tv)}>
                     <Pencil className="w-3 h-3 mr-1" /> Editar
                   </Button>
-                  <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8" onClick={() => excluir(tv.id, tv.nome_empresa)}>
+                  <Button size="sm" variant="outline" className="text-red-400 border-red-500/30 hover:bg-red-500/10 text-xs h-8" onClick={() => excluir(tv.id, tv.nome_empresa)}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>

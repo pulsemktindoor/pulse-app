@@ -21,7 +21,6 @@ import { format, addMonths, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import dynamic from 'next/dynamic'
 import { ContratoPDF } from '@/components/contrato-pdf'
-import { LOCAIS_DISPONIVEIS } from '@/app/clientes/page'
 
 const PDFDownloadLink = dynamic(
   () => import('@react-pdf/renderer').then((m) => m.PDFDownloadLink),
@@ -80,13 +79,23 @@ export default function NovoContratoPage() {
   const router = useRouter()
   const [etapa, setEtapa] = useState(1)
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [locaisDisponiveis, setLocaisDisponiveis] = useState<string[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
   const [salvando, setSalvando] = useState(false)
   const [contratoSalvo, setContratoSalvo] = useState<Contrato | null>(null)
 
   useEffect(() => {
-    supabase.from('clientes').select('*').order('nome_empresa').then(({ data }) => {
+    supabase.from('clientes').select('*').eq('ativo', true).order('nome_empresa').then(({ data }) => {
       if (data) setClientes(data)
+    })
+    supabase.from('telas').select('nome').eq('ativo', true).order('nome').then(({ data }) => {
+      if (data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nomes = (data as any[]).map((t) => t.nome as string)
+        const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/gi, '')
+        const seen = new Set<string>()
+        setLocaisDisponiveis(nomes.filter(n => { const k = norm(n); return seen.has(k) ? false : !!seen.add(k) }))
+      }
     })
   }, [])
 
@@ -107,7 +116,7 @@ export default function NovoContratoPage() {
       cep: c.cep || '',
       contato: c.whatsapp || '',
       valor_mensal: c.valor_mensal ? String(c.valor_mensal) : '',
-      locais_selecionados: prev.tipo === 'corporativa' ? [] : (c.locais || []),
+      locais_selecionados: [],
     }))
   }
 
@@ -189,7 +198,7 @@ export default function NovoContratoPage() {
       data_fim: dataFim,
       valor_mensal: form.valor_mensal ? parseFloat(form.valor_mensal.replace(',', '.')) : null,
       dia_pagamento: form.dia_pagamento ? parseInt(form.dia_pagamento) : null,
-      locais_selecionados: form.locais_selecionados,
+      locais_selecionados: [...new Set(form.locais_selecionados)],
       dias_semana: [],
       horario_semana_inicio: null,
       horario_semana_fim: null,
@@ -217,12 +226,12 @@ export default function NovoContratoPage() {
       <div className="flex items-center gap-3 mb-8">
         <button
           onClick={() => etapa > 1 && etapa < 3 ? setEtapa(etapa - 1) : router.push('/contratos')}
-          className="p-2 rounded-lg hover:bg-zinc-100 transition-colors"
+          className="p-2 rounded-lg hover:bg-white/[0.08] transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-zinc-500" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Novo Contrato</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">Novo Contrato</h1>
           <p className="text-zinc-500 text-sm">
             {etapa === 1 && 'Etapa 1 — Empresa e tipo'}
             {etapa === 2 && 'Etapa 2 — Detalhes do contrato'}
@@ -239,14 +248,14 @@ export default function NovoContratoPage() {
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                 n < etapa ? 'bg-green-500 text-white' :
                 n === etapa ? 'bg-blue-600 text-white' :
-                'bg-zinc-100 text-zinc-400'
+                'bg-white/[0.07] text-zinc-500'
               }`}>
                 {n < etapa ? <Check className="w-4 h-4" /> : n}
               </div>
-              <span className={`text-sm ${n === etapa ? 'text-zinc-900 font-medium' : 'text-zinc-400'}`}>
+              <span className={`text-sm ${n === etapa ? 'text-zinc-100 font-medium' : 'text-zinc-500'}`}>
                 {n === 1 ? 'Empresa' : 'Contrato'}
               </span>
-              {n < 2 && <div className="w-12 h-px bg-zinc-200 mx-1" />}
+              {n < 2 && <div className="w-12 h-px bg-white/[0.10] mx-1" />}
             </div>
           ))}
         </div>
@@ -269,10 +278,10 @@ export default function NovoContratoPage() {
                   type="button"
                   onClick={() => setForm({ ...form, tipo: t.value, locais_selecionados: t.value === 'corporativa' ? [] : form.locais_selecionados })}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
-                    form.tipo === t.value ? t.color : 'border-zinc-200 hover:border-zinc-300'
+                    form.tipo === t.value ? t.color : 'border-white/[0.10] hover:border-white/[0.20]'
                   }`}
                 >
-                  <p className="font-semibold text-sm text-zinc-900">{t.label}</p>
+                  <p className="font-semibold text-sm text-zinc-100">{t.label}</p>
                   <p className="text-xs text-zinc-500 mt-0.5">{t.desc}</p>
                 </button>
               ))}
@@ -288,18 +297,18 @@ export default function NovoContratoPage() {
                 onClick={() => setForm({ ...form, exclusivo: !form.exclusivo, ramo_exclusividade: form.exclusivo ? '' : form.ramo_exclusividade })}
                 className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
                   form.exclusivo
-                    ? 'border-amber-500 bg-amber-50'
-                    : 'border-zinc-200 hover:border-zinc-300'
+                    ? 'border-amber-500 bg-amber-500/10'
+                    : 'border-white/[0.10] hover:border-white/[0.20]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
-                    form.exclusivo ? 'bg-amber-500 border-amber-500' : 'border-zinc-300'
+                    form.exclusivo ? 'bg-amber-500 border-amber-500' : 'border-white/[0.20]'
                   }`}>
                     {form.exclusivo && <Check className="w-3 h-3 text-white" />}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-zinc-900">Contrato com exclusividade</p>
+                    <p className="font-semibold text-sm text-zinc-100">Contrato com exclusividade</p>
                     <p className="text-xs text-zinc-500 mt-0.5">A Pulse não anunciará concorrentes do mesmo ramo nas telas deste cliente</p>
                   </div>
                 </div>
@@ -334,8 +343,8 @@ export default function NovoContratoPage() {
             </Select>
           </div>
 
-          <div className="border-t border-zinc-100 pt-4">
-            <p className="text-sm font-medium text-zinc-700 mb-4">
+          <div className="border-t border-white/[0.08] pt-4">
+            <p className="text-sm font-medium text-zinc-300 mb-4">
               Dados {isParceria ? 'da Contratada' : form.tipo === 'corporativa' ? 'do Contratado' : 'do Anunciante'}
             </p>
             <div className="space-y-4">
@@ -447,8 +456,8 @@ export default function NovoContratoPage() {
         <div className="space-y-6">
           {/* Duração */}
           <div>
-            <p className="text-sm font-medium text-zinc-700 mb-3 flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-blue-600" />
+            <p className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+              <CalendarDays className="w-4 h-4 text-blue-400" />
               Período do contrato
             </p>
             <div className="flex gap-3 mb-3">
@@ -463,8 +472,8 @@ export default function NovoContratoPage() {
                   onClick={() => setForm({ ...form, duracao_meses: d.value })}
                   className={`py-2.5 px-4 rounded-xl border-2 text-sm font-medium transition-all ${
                     form.duracao_meses === d.value
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-zinc-200 text-zinc-600 hover:border-zinc-300'
+                      ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                      : 'border-white/[0.10] text-zinc-400 hover:border-white/[0.20]'
                   }`}
                 >
                   {d.label}
@@ -499,7 +508,7 @@ export default function NovoContratoPage() {
                   type="date"
                   value={dataFim}
                   disabled
-                  className="bg-zinc-50 text-zinc-500"
+                  className="bg-white/[0.03] text-zinc-500"
                 />
               </div>
             </div>
@@ -508,8 +517,8 @@ export default function NovoContratoPage() {
           {/* Valor */}
           {showValor && (
             <div>
-              <p className="text-sm font-medium text-zinc-700 mb-3 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-blue-600" />
+              <p className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-blue-400" />
                 Investimento
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -538,14 +547,14 @@ export default function NovoContratoPage() {
 
           {/* Telas */}
           <div>
-            <p className="text-sm font-medium text-zinc-700 mb-3 flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-blue-600" />
+            <p className="text-sm font-medium text-zinc-300 mb-3 flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-blue-400" />
               {form.tipo === 'corporativa'
                 ? 'Telas de Marketing Indoor para Permuta (opcional — deixe vazio para contrato só corporativa)'
                 : 'Telas do contrato'}
             </p>
             <div className="flex flex-wrap gap-2">
-              {LOCAIS_DISPONIVEIS.map((local) => (
+              {locaisDisponiveis.map((local) => (
                 <button
                   key={local}
                   type="button"
@@ -553,7 +562,7 @@ export default function NovoContratoPage() {
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     form.locais_selecionados.includes(local)
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'border-zinc-300 text-zinc-600 hover:border-blue-400'
+                      : 'border-white/[0.15] text-zinc-400 hover:border-blue-400'
                   }`}
                 >
                   {local}
@@ -563,11 +572,11 @@ export default function NovoContratoPage() {
           </div>
 
           {/* Preview resumo */}
-          <Card className="border-blue-100 bg-blue-50/50">
+          <Card className="border-blue-500/20 bg-blue-500/[0.08]">
             <CardContent className="pt-4 pb-3">
               <div className="flex items-start gap-3">
                 <FileText className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                <div className="space-y-1 text-sm text-zinc-700">
+                <div className="space-y-1 text-sm text-zinc-300">
                   <p><span className="font-semibold">{form.nome_empresa}</span></p>
                   <p className="text-xs text-zinc-500">
                     {form.tipo === 'anuncio' ? 'Anúncio' : form.tipo === 'parceria' ? 'Parceria' : 'Corporativa'} ·{' '}
@@ -576,7 +585,7 @@ export default function NovoContratoPage() {
                     {dataFim && ` → ${format(parseISO(dataFim), 'dd/MM/yyyy', { locale: ptBR })}`}
                   </p>
                   {form.valor_mensal && (
-                    <p className="text-xs font-semibold text-green-600">
+                    <p className="text-xs font-semibold text-green-400">
                       R$ {parseFloat(form.valor_mensal.replace(',', '.')).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
                     </p>
                   )}
@@ -603,10 +612,10 @@ export default function NovoContratoPage() {
       {etapa === 3 && contratoSalvo && (
         <div className="space-y-6">
           <div className="text-center py-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-green-400" />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 mb-1">Contrato gerado!</h2>
+            <h2 className="text-xl font-bold text-zinc-100 mb-1">Contrato gerado!</h2>
             <p className="text-zinc-500 text-sm">
               Contrato de <strong>{contratoSalvo.nome_empresa}</strong> criado com sucesso.
             </p>
@@ -622,7 +631,7 @@ export default function NovoContratoPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Vigência</span>
-                <span className="font-medium text-zinc-900">
+                <span className="font-medium text-zinc-100">
                   {format(parseISO(contratoSalvo.data_inicio), 'dd/MM/yyyy')} →{' '}
                   {format(parseISO(contratoSalvo.data_fim), 'dd/MM/yyyy')}
                 </span>
@@ -630,7 +639,7 @@ export default function NovoContratoPage() {
               {contratoSalvo.valor_mensal && (
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Valor mensal</span>
-                  <span className="font-bold text-green-600">
+                  <span className="font-bold text-green-400">
                     R$ {contratoSalvo.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -640,7 +649,7 @@ export default function NovoContratoPage() {
 
           <PDFDownloadLink
             document={<ContratoPDF contrato={contratoSalvo} logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''} />}
-            fileName={`contrato-${contratoSalvo.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(contratoSalvo.data_inicio), 'yyyy-MM')}.pdf`}
+            fileName={`contrato-${contratoSalvo.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(contratoSalvo.data_inicio), 'yyyy-MM')}-${format(new Date(), 'ddMMyy-HHmm')}.pdf`}
           >
             {({ loading: pdfLoading }: { loading: boolean }) => (
               <Button className="w-full bg-blue-600 hover:bg-blue-700" disabled={pdfLoading}>

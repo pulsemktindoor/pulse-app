@@ -30,7 +30,6 @@ import { toast } from 'sonner'
 import { format, parseISO, addMonths } from 'date-fns'
 import dynamic from 'next/dynamic'
 import { ContratoPDF } from '@/components/contrato-pdf'
-import { LOCAIS_DISPONIVEIS } from '@/app/clientes/page'
 
 const PDFDownloadLink = dynamic(
   () => import('@react-pdf/renderer').then((m) => m.PDFDownloadLink),
@@ -39,14 +38,14 @@ const PDFDownloadLink = dynamic(
 
 const TIPO_LABEL: Record<string, string> = { anuncio: 'Anúncio', parceria: 'Parceria', corporativa: 'Corporativa' }
 const TIPO_COLOR: Record<string, string> = {
-  anuncio: 'bg-blue-50 text-blue-700 border-blue-200',
-  parceria: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  corporativa: 'bg-purple-50 text-purple-700 border-purple-200',
+  anuncio: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  parceria: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  corporativa: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
 }
 const STATUS_COLOR: Record<string, string> = {
-  gerado: 'bg-zinc-100 text-zinc-600',
-  enviado: 'bg-yellow-100 text-yellow-700',
-  assinado: 'bg-green-100 text-green-700',
+  gerado: 'bg-white/[0.07] text-zinc-400',
+  enviado: 'bg-yellow-500/20 text-yellow-400',
+  assinado: 'bg-green-500/20 text-green-400',
 }
 const STATUS_LABEL: Record<string, string> = { gerado: 'Gerado', enviado: 'Enviado', assinado: 'Assinado' }
 
@@ -90,6 +89,7 @@ function criarModeloBranco(tipo: ContratoTipo, duracao: number): Contrato {
 
 export default function ContratosPage() {
   const [contratos, setContratos] = useState<Contrato[]>([])
+  const [locaisDisponiveis, setLocaisDisponiveis] = useState<string[]>([])
   const [busca, setBusca] = useState('')
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState<Contrato | null>(null)
@@ -104,7 +104,13 @@ export default function ContratosPage() {
     locais_selecionados: [],
   })
 
-  useEffect(() => { loadContratos() }, [])
+  useEffect(() => {
+    loadContratos()
+    supabase.from('telas').select('nome').eq('ativo', true).order('nome').then(({ data }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (data) setLocaisDisponiveis((data as any[]).map((t) => t.nome as string))
+    })
+  }, [])
 
   async function loadContratos() {
     const { data, error } = await supabase.from('contratos').select('*').order('created_at', { ascending: false })
@@ -206,7 +212,7 @@ export default function ContratosPage() {
     <div className="p-6 md:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Contratos</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">Contratos</h1>
           <p className="text-zinc-500 text-sm mt-1">
             {contratos.length} contrato(s)
             {totalPendentes > 0 && ` · ${totalPendentes} pendente(s) de assinatura`}
@@ -233,14 +239,14 @@ export default function ContratosPage() {
         <p className="text-zinc-400 text-sm">Carregando...</p>
       ) : contratosFiltrados.length === 0 ? (
         <div className="text-center py-20">
-          <FileText className="w-12 h-12 text-zinc-200 mx-auto mb-3" />
+          <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-400">Nenhum contrato encontrado.</p>
-          <p className="text-zinc-300 text-sm mt-1">Clique em "Novo contrato" para começar.</p>
+          <p className="text-zinc-500 text-sm mt-1">Clique em &quot;Novo contrato&quot; para começar.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {contratosFiltrados.map((c) => (
-            <Card key={c.id} className="hover:shadow-md transition-shadow">
+            <Card key={c.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -264,17 +270,17 @@ export default function ContratosPage() {
                   {c.valor_mensal && (
                     <p>
                       <span className="text-zinc-400">Valor: </span>
-                      <span className="font-semibold text-green-600">
+                      <span className="font-semibold text-green-400">
                         R$ {c.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
                       </span>
                     </p>
                   )}
                   {c.locais_selecionados?.length > 0 && (
-                    <p><span className="text-zinc-400">Telas: </span>{c.locais_selecionados.length} selecionada(s)</p>
+                    <p><span className="text-zinc-400">Telas: </span>{[...new Set(c.locais_selecionados)].length} selecionada(s)</p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-1 border-t border-zinc-100">
+                <div className="flex items-center justify-between pt-1 border-t border-white/[0.08]">
                   <Badge className={`text-xs ${STATUS_COLOR[c.status]}`}>
                     {c.status === 'assinado' && <CheckCircle2 className="w-3 h-3 mr-1 inline" />}
                     {STATUS_LABEL[c.status]}
@@ -283,14 +289,14 @@ export default function ContratosPage() {
                     {/* Avançar status */}
                     {c.status === 'gerado' && (
                       <Button size="sm" variant="outline"
-                        className="text-xs h-7 px-2 text-yellow-700 border-yellow-200 hover:bg-yellow-50"
+                        className="text-xs h-7 px-2 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/10"
                         onClick={() => atualizarStatus(c.id, 'enviado')} title="Marcar como enviado">
                         <Send className="w-3 h-3" />
                       </Button>
                     )}
                     {c.status === 'enviado' && (
                       <Button size="sm" variant="outline"
-                        className="text-xs h-7 px-2 text-green-700 border-green-200 hover:bg-green-50"
+                        className="text-xs h-7 px-2 text-green-400 border-green-500/30 hover:bg-green-500/10"
                         onClick={() => atualizarStatus(c.id, 'assinado')} title="Marcar como assinado">
                         <CheckCircle2 className="w-3 h-3" />
                       </Button>
@@ -298,14 +304,14 @@ export default function ContratosPage() {
                     {/* Voltar status */}
                     {c.status === 'assinado' && (
                       <Button size="sm" variant="outline"
-                        className="text-xs h-7 px-2 text-zinc-500 border-zinc-200 hover:bg-zinc-50"
+                        className="text-xs h-7 px-2 text-zinc-500 border-white/[0.10] hover:bg-white/[0.05]"
                         onClick={() => atualizarStatus(c.id, 'enviado')} title="Voltar para Enviado">
                         <Undo2 className="w-3 h-3" />
                       </Button>
                     )}
                     {c.status === 'enviado' && (
                       <Button size="sm" variant="outline"
-                        className="text-xs h-7 px-2 text-zinc-500 border-zinc-200 hover:bg-zinc-50"
+                        className="text-xs h-7 px-2 text-zinc-500 border-white/[0.10] hover:bg-white/[0.05]"
                         onClick={() => atualizarStatus(c.id, 'gerado')} title="Voltar para Gerado">
                         <Undo2 className="w-3 h-3" />
                       </Button>
@@ -319,11 +325,11 @@ export default function ContratosPage() {
                     {/* PDF */}
                     <PDFDownloadLink
                       document={<ContratoPDF contrato={c} logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''} />}
-                      fileName={`contrato-${c.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(c.data_inicio), 'yyyy-MM')}.pdf`}
+                      fileName={`contrato-${c.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(c.data_inicio), 'yyyy-MM')}-${format(new Date(), 'ddMMyy-HHmm')}.pdf`}
                     >
                       {({ loading: pdfLoading }: { loading: boolean }) => (
                         <Button size="sm" variant="outline"
-                          className="text-xs h-7 px-2 text-blue-700 border-blue-200 hover:bg-blue-50"
+                          className="text-xs h-7 px-2 text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
                           disabled={pdfLoading} title="Baixar PDF">
                           <Download className="w-3 h-3" />
                         </Button>
@@ -331,7 +337,7 @@ export default function ContratosPage() {
                     </PDFDownloadLink>
                     {/* Excluir */}
                     <Button size="sm" variant="outline"
-                      className="text-xs h-7 px-2 text-red-600 border-red-200 hover:bg-red-50"
+                      className="text-xs h-7 px-2 text-red-400 border-red-500/30 hover:bg-red-500/10"
                       onClick={() => excluir(c.id, c.nome_empresa)} title="Excluir">
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -356,7 +362,7 @@ export default function ContratosPage() {
                 {(['anuncio', 'parceria', 'corporativa'] as const).map((t) => (
                   <button key={t} type="button"
                     onClick={() => setModeloBrancoTipo(t)}
-                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${modeloBrancoTipo === t ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 text-zinc-600'}`}>
+                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${modeloBrancoTipo === t ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/[0.10] text-zinc-400'}`}>
                     {TIPO_LABEL[t]}
                   </button>
                 ))}
@@ -368,7 +374,7 @@ export default function ContratosPage() {
                 {[6, 12].map((d) => (
                   <button key={d} type="button"
                     onClick={() => setModeloBrancoDuracao(d)}
-                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${modeloBrancoDuracao === d ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 text-zinc-600'}`}>
+                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${modeloBrancoDuracao === d ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/[0.10] text-zinc-400'}`}>
                     {d} meses
                   </button>
                 ))}
@@ -380,7 +386,7 @@ export default function ContratosPage() {
                 logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''}
                 semDados
               />}
-              fileName={`modelo-branco-${modeloBrancoTipo}-${modeloBrancoDuracao}m.pdf`}
+              fileName={`modelo-branco-${modeloBrancoTipo}-${modeloBrancoDuracao}m-${format(new Date(), 'ddMMyy-HHmm')}.pdf`}
             >
               {({ loading: pdfLoading }: { loading: boolean }) => (
                 <Button className="w-full bg-blue-600 hover:bg-blue-700" disabled={pdfLoading}
@@ -408,7 +414,7 @@ export default function ContratosPage() {
                 {(['anuncio', 'parceria', 'corporativa'] as const).map((t) => (
                   <button key={t} type="button"
                     onClick={() => setEditForm({ ...editForm, tipo: t })}
-                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${editForm.tipo === t ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 text-zinc-600'}`}>
+                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${editForm.tipo === t ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/[0.10] text-zinc-400'}`}>
                     {TIPO_LABEL[t]}
                   </button>
                 ))}
@@ -417,7 +423,7 @@ export default function ContratosPage() {
 
             {/* Dados da empresa */}
             <div className="border-t pt-4">
-              <p className="text-sm font-medium text-zinc-700 mb-3">Dados da empresa</p>
+              <p className="text-sm font-medium text-zinc-300 mb-3">Dados da empresa</p>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
@@ -472,12 +478,12 @@ export default function ContratosPage() {
 
             {/* Período */}
             <div className="border-t pt-4">
-              <p className="text-sm font-medium text-zinc-700 mb-3">Período</p>
+              <p className="text-sm font-medium text-zinc-300 mb-3">Período</p>
               <div className="flex gap-2 mb-3">
                 {[{ value: '6', label: '6 meses' }, { value: '12', label: '12 meses' }, { value: 'personalizado', label: 'Personalizado' }].map((d) => (
                   <button key={d.value} type="button"
                     onClick={() => setEditForm({ ...editForm, duracao_meses: d.value })}
-                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${editForm.duracao_meses === d.value ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-zinc-200 text-zinc-600'}`}>
+                    className={`py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${editForm.duracao_meses === d.value ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-white/[0.10] text-zinc-400'}`}>
                     {d.label}
                   </button>
                 ))}
@@ -497,7 +503,7 @@ export default function ContratosPage() {
                 </div>
                 <div className="space-y-1">
                   <Label>Término (calculado)</Label>
-                  <Input value={editDataFim} disabled className="bg-zinc-50 text-zinc-500" />
+                  <Input value={editDataFim} disabled className="bg-white/[0.03] text-zinc-500" />
                 </div>
               </div>
             </div>
@@ -505,7 +511,7 @@ export default function ContratosPage() {
             {/* Valor */}
             {editForm.tipo !== 'parceria' && (
               <div className="border-t pt-4">
-                <p className="text-sm font-medium text-zinc-700 mb-3">Investimento</p>
+                <p className="text-sm font-medium text-zinc-300 mb-3">Investimento</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label>Valor mensal (R$)</Label>
@@ -521,18 +527,18 @@ export default function ContratosPage() {
 
             {/* Telas */}
             <div className="border-t pt-4">
-              <p className="text-sm font-medium text-zinc-700 mb-3">
+              <p className="text-sm font-medium text-zinc-300 mb-3">
                 {editForm.tipo === 'corporativa'
                   ? 'Telas de Marketing Indoor para Permuta (opcional)'
                   : 'Telas do contrato'}
               </p>
               <div className="flex flex-wrap gap-2">
-                {LOCAIS_DISPONIVEIS.map((local) => (
+                {locaisDisponiveis.map((local) => (
                   <button key={local} type="button" onClick={() => toggleLocalEdit(local)}
                     className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                       editForm.locais_selecionados.includes(local)
                         ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-zinc-300 text-zinc-600 hover:border-blue-400'
+                        : 'border-white/[0.15] text-zinc-400 hover:border-blue-400'
                     }`}>
                     {local}
                   </button>

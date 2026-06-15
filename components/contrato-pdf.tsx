@@ -24,7 +24,7 @@ const s = StyleSheet.create({
     fontFamily: 'Helvetica',
     fontSize: 9,
     color: TEXT,
-    paddingTop: 20,
+    paddingTop: 42,
     paddingBottom: 50,
     paddingHorizontal: 0,
   },
@@ -164,19 +164,18 @@ const s = StyleSheet.create({
 
   // CLÁUSULAS
   clausula: {
-    marginBottom: 10,
-    breakInside: 'avoid',
+    marginBottom: 18,
   },
   clausulaTitulo: {
-    fontSize: 8.5,
+    fontSize: 9.5,
     fontFamily: 'Helvetica-Bold',
     color: DARK,
-    marginBottom: 4,
+    marginBottom: 5,
   },
   clausulaTexto: {
-    fontSize: 8,
+    fontSize: 9,
     color: '#374151',
-    lineHeight: 1.55,
+    lineHeight: 1.65,
   },
   negrito: {
     fontFamily: 'Helvetica-Bold',
@@ -188,15 +187,15 @@ const s = StyleSheet.create({
     paddingLeft: 8,
   },
   bulletDot: {
-    fontSize: 8,
+    fontSize: 9,
     color: BLUE,
     marginRight: 4,
     width: 8,
   },
   bulletTexto: {
-    fontSize: 8,
+    fontSize: 9,
     color: '#374151',
-    lineHeight: 1.5,
+    lineHeight: 1.65,
     flex: 1,
   },
 
@@ -298,6 +297,95 @@ const s = StyleSheet.create({
   },
   footerText: { fontSize: 6.5, color: '#9ca3af' },
   footerBrand: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: BLUE },
+
+  // MODO EM BRANCO — campos para preencher à mão
+  campoRowBlank: {
+    flexDirection: 'row',
+    marginBottom: 11,
+    alignItems: 'flex-end',
+  },
+  blankField: {
+    flex: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: '#555',
+    height: 20,
+  },
+  infoStripBlank: {
+    backgroundColor: LIGHT_BG,
+    paddingHorizontal: 40,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
+  },
+  infoItemBlank: {
+    flexDirection: 'column',
+    gap: 4,
+  },
+  infoBlankLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#555',
+    height: 16,
+    width: 130,
+  },
+  valorNumeroBlank: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#555',
+    height: 22,
+    width: 140,
+    marginTop: 4,
+  },
+  assinaturaLinhaBlank: {
+    borderTopWidth: 1,
+    borderTopColor: TEXT,
+    width: '100%',
+    marginTop: 44,
+    marginBottom: 5,
+  },
+
+  // ── CONTRATO EM BRANCO — grade clássica com cores ──
+  bTabela: { borderWidth: 1, borderColor: BORDER, marginBottom: 10 },
+  bCabecalho: { backgroundColor: BLUE, padding: '5 10' },
+  bCabecalhoTexto: {
+    fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: '#ffffff',
+    textTransform: 'uppercase', letterSpacing: 0.8, textAlign: 'center',
+  },
+  bLinha: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: BORDER },
+  bLinhaFirst: { flexDirection: 'row' },
+  bBordaEsq: { borderLeftWidth: 1, borderLeftColor: BORDER },
+  bCelulaPre: { flex: 1, padding: '4 8', justifyContent: 'center', minHeight: 20 },
+  bCelulaFixaPre: { padding: '4 8', justifyContent: 'center', minHeight: 20, width: 80 },
+  bTexto: { fontSize: 8.5, color: TEXT },
+  bLabelInline: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: TEXT },
+  bCelulaVazia: { flex: 1, padding: '5 8', justifyContent: 'flex-end', minHeight: 30 },
+  bCelulaVaziaFixa: { padding: '5 8', justifyContent: 'flex-end', minHeight: 30 },
+  bLabel: { fontSize: 8, color: MUTED, fontFamily: 'Helvetica-Bold' },
+  bValorInline: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: DARK },
+  bVigencia: { borderWidth: 1, borderColor: BORDER, flexDirection: 'row', marginBottom: 10 },
+  bVigenciaCel: { flex: 1, padding: '7 10', minHeight: 40, justifyContent: 'flex-end' },
+  bVigenciaDuracao: { flex: 1, padding: '7 10', minHeight: 40, justifyContent: 'center' },
+  bDiasTabela: { borderWidth: 1, borderColor: BORDER, marginTop: 6, marginBottom: 14 },
+  bDiasHeaderRow: {
+    flexDirection: 'row', backgroundColor: LIGHT_BG,
+    borderBottomWidth: 1, borderBottomColor: BORDER,
+  },
+  bDiasRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: BORDER, minHeight: 22 },
+  bDiasCelDia: { width: '45%', padding: '4 8', alignItems: 'center', justifyContent: 'center' },
+  bDiasCelHorario: {
+    flex: 1, padding: '4 8', borderLeftWidth: 1, borderLeftColor: BORDER,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  bDiasHeaderText: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: DARK, textAlign: 'center' },
+  bDiasText: { fontSize: 9, color: TEXT, textAlign: 'center' },
+
+  // células de formulário em branco: label em cima, linha embaixo
+  bCampoVazio: { flex: 1, padding: '4 8', justifyContent: 'space-between', minHeight: 36 },
+  bCampoFixo: { padding: '4 8', justifyContent: 'space-between', minHeight: 36 },
+  bCampoLabel: { fontSize: 7.5, color: MUTED, fontFamily: 'Helvetica-Bold' },
+  bCampoLinha: { borderBottomWidth: 0.75, borderBottomColor: '#aaaaaa', marginTop: 6 },
+  bCampoValorPre: { fontSize: 9.5, color: DARK, fontFamily: 'Helvetica-Bold', marginTop: 4 },
 })
 
 function fmtData(d: string) {
@@ -345,7 +433,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
   const temPermuta = contrato.tipo === 'corporativa' && (contrato.locais_selecionados?.length ?? 0) > 0
 
   const tituloTipo =
-    contrato.tipo === 'anuncio' ? 'Contrato de Publicidade Mídia Indoor' :
+    contrato.tipo === 'anuncio' ? 'Contrato de Publicidade Marketing Indoor' :
     contrato.tipo === 'parceria' ? 'Contrato de Parceria / Permuta' :
     temPermuta ? 'Contrato de Parceria — Tela Corporativa e Tela Marketing Indoor' :
     'Contrato de TV Corporativa'
@@ -378,9 +466,11 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
             {logoUrl ? (
               <Image style={s.logoImg} src={logoUrl} />
             ) : null}
-            <View style={s.logoTexto}>
-              <Text style={s.logoSub}>MARKETING INDOOR</Text>
-            </View>
+            {!semDados && (
+              <View style={s.logoTexto}>
+                <Text style={s.logoSub}>MARKETING INDOOR</Text>
+              </View>
+            )}
           </View>
           <View style={s.headerDireita}>
             <Text style={s.headerTipoLabel}>Documento</Text>
@@ -389,100 +479,233 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
           </View>
         </View>
 
-        {/* ── FAIXA DE VIGÊNCIA ── */}
-        <View style={s.infoStrip}>
-          <View style={s.infoItem}>
-            <Text style={s.infoLabel}>Início: </Text>
-            <Text style={s.infoValue}>{semDados ? B(18) : fmtData(contrato.data_inicio)}</Text>
-          </View>
-          <View style={s.infoItem}>
-            <Text style={s.infoLabel}>Término: </Text>
-            <Text style={s.infoValue}>{semDados ? B(18) : fmtData(contrato.data_fim)}</Text>
-          </View>
-          <View style={s.infoItem}>
-            <Text style={s.infoLabel}>Duração: </Text>
-            <Text style={s.infoValue}>{fmtDuracao(contrato.duracao_meses)}</Text>
-          </View>
-        </View>
-
-        <View style={s.body}>
-
-          {/* ── IDENTIFICAÇÃO DAS PARTES ── */}
-          <View style={s.section}>
-            <Text style={s.secTitulo}>Identificação das Partes</Text>
-            <View style={s.partesGrid}>
-              {/* Pulse */}
-              <View style={s.parteCard}>
-                <Text style={s.parteCardTitulo}>Contratante</Text>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>Razão Social</Text>
-                  <Text style={s.campoValor}>PULSE MARKETING INDOOR</Text>
-                </View>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>CNPJ</Text>
-                  <Text style={s.campoValorNormal}>50.982.835/0001-62</Text>
-                </View>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>Endereço</Text>
-                  <Text style={s.campoValorNormal}>R. General Osório, nº 3139</Text>
-                </View>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>Bairro/Cidade</Text>
-                  <Text style={s.campoValorNormal}>Água Verde — Blumenau/SC</Text>
-                </View>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>CEP</Text>
-                  <Text style={s.campoValorNormal}>89042-001</Text>
-                </View>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>Email</Text>
-                  <Text style={s.campoValorNormal}>pulsemktindoor@gmail.com</Text>
-                </View>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>Contato</Text>
-                  <Text style={s.campoValorNormal}>(47) 98469-9904</Text>
-                </View>
-              </View>
-              {/* Outro lado */}
-              <View style={s.parteCard}>
-                <Text style={s.parteCardTitulo}>{parteLabel}</Text>
-                <View style={s.campoRow}>
-                  <Text style={s.campoLabel}>Razão Social</Text>
-                  <Text style={s.campoValor}>{semDados ? B() : (contrato.nome_empresa || '—')}</Text>
-                </View>
-                {(semDados || contrato.cnpj_cpf) ? (
-                  <View style={s.campoRow}>
-                    <Text style={s.campoLabel}>CNPJ / CPF</Text>
-                    <Text style={s.campoValorNormal}>{semDados ? B() : fmtCnpjCpf(contrato.cnpj_cpf!)}</Text>
-                  </View>
-                ) : null}
-                {(semDados || endAnunciante) ? (
-                  <View style={s.campoRow}>
-                    <Text style={s.campoLabel}>Endereço</Text>
-                    <Text style={s.campoValorNormal}>{semDados ? B() : endAnunciante}</Text>
-                  </View>
-                ) : null}
-                {(semDados || bairroCidadeAnunciante) ? (
-                  <View style={s.campoRow}>
-                    <Text style={s.campoLabel}>Bairro/Cidade</Text>
-                    <Text style={s.campoValorNormal}>{semDados ? B() : bairroCidadeAnunciante}</Text>
-                  </View>
-                ) : null}
-                {(semDados || contrato.cep) ? (
-                  <View style={s.campoRow}>
-                    <Text style={s.campoLabel}>CEP</Text>
-                    <Text style={s.campoValorNormal}>{semDados ? B(14) : contrato.cep}</Text>
-                  </View>
-                ) : null}
-                {(semDados || contrato.contato) ? (
-                  <View style={s.campoRow}>
-                    <Text style={s.campoLabel}>Contato</Text>
-                    <Text style={s.campoValorNormal}>{semDados ? B() : fmtTelefone(contrato.contato!)}</Text>
-                  </View>
-                ) : null}
-              </View>
+        {/* ── FAIXA DE VIGÊNCIA ── (só no contrato preenchido; o branco usa tabela no corpo) */}
+        {!semDados && (
+          <View style={s.infoStrip}>
+            <View style={s.infoItem}>
+              <Text style={s.infoLabel}>Início: </Text>
+              <Text style={s.infoValue}>{fmtData(contrato.data_inicio)}</Text>
+            </View>
+            <View style={s.infoItem}>
+              <Text style={s.infoLabel}>Término: </Text>
+              <Text style={s.infoValue}>{fmtData(contrato.data_fim)}</Text>
+            </View>
+            <View style={s.infoItem}>
+              <Text style={s.infoLabel}>Duração: </Text>
+              <Text style={s.infoValue}>{fmtDuracao(contrato.duracao_meses)}</Text>
             </View>
           </View>
+        )}
+
+        <View style={[s.body, semDados ? { paddingTop: 12 } : {}]}>
+
+          {/* ── IDENTIFICAÇÃO DAS PARTES ── */}
+          {semDados ? (
+            <>
+              {/* VIGÊNCIA */}
+              <View style={s.bTabela}>
+                <View style={s.bCabecalho}>
+                  <Text style={s.bCabecalhoTexto}>Vigência do Contrato</Text>
+                </View>
+                <View style={s.bLinhaFirst}>
+                  <View style={s.bCampoVazio}>
+                    <Text style={s.bCampoLabel}>Data de início:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoVazio, s.bBordaEsq]}>
+                    <Text style={s.bCampoLabel}>Data de término:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { width: 130 }]}>
+                    <Text style={s.bCampoLabel}>Duração:</Text>
+                    <Text style={s.bCampoValorPre}>{fmtDuracao(contrato.duracao_meses)}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* DADOS DO CONTRATANTE */}
+              <View style={s.bTabela}>
+                <View style={s.bCabecalho}>
+                  <Text style={s.bCabecalhoTexto}>Dados do Contratante</Text>
+                </View>
+                <View style={s.bLinhaFirst}>
+                  <View style={[s.bCampoFixo, { flex: 1, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>Nome / Razão Social</Text>
+                    <Text style={[s.bTexto, { fontFamily: 'Helvetica-Bold', marginTop: 2 }]}>PULSE MARKETING INDOOR</Text>
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={[s.bCampoFixo, { width: 160, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>CNPJ</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>50.982.835/0001-62</Text>
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { flex: 1, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>Endereço</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>R. General Osório, nº 3139</Text>
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={[s.bCampoFixo, { width: 120, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>Bairro</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>Água Verde</Text>
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { flex: 1, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>Cidade / UF</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>Blumenau / SC</Text>
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { width: 80, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>CEP</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>89042-001</Text>
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={[s.bCampoFixo, { flex: 1, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>E-mail</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>pulsemktindoor@gmail.com</Text>
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { width: 160, minHeight: 32 }]}>
+                    <Text style={s.bCampoLabel}>Contato</Text>
+                    <Text style={[s.bTexto, { marginTop: 2 }]}>(47) 98469-9904</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* DADOS DA CONTRATADA / ANUNCIANTE / CONTRATADO */}
+              <View style={s.bTabela}>
+                <View style={s.bCabecalho}>
+                  <Text style={s.bCabecalhoTexto}>
+                    {'Dados ' + (contrato.tipo === 'corporativa' ? 'do ' : 'da ') + parteLabel}
+                  </Text>
+                </View>
+                <View style={s.bLinhaFirst}>
+                  <View style={s.bCampoVazio}>
+                    <Text style={s.bCampoLabel}>Nome / Razão Social:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={[s.bCampoFixo, { width: 130 }]}>
+                    <Text style={s.bCampoLabel}>CPF / CNPJ:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoVazio, s.bBordaEsq]}>
+                    <Text style={s.bCampoLabel}>Endereço:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { width: 66 }]}>
+                    <Text style={s.bCampoLabel}>Nº:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={s.bCampoVazio}>
+                    <Text style={s.bCampoLabel}>Bairro:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoVazio, s.bBordaEsq]}>
+                    <Text style={s.bCampoLabel}>Complemento:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={s.bCampoVazio}>
+                    <Text style={s.bCampoLabel}>Cidade:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { width: 38 }]}>
+                    <Text style={s.bCampoLabel}>UF:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                  <View style={[s.bCampoFixo, s.bBordaEsq, { width: 100 }]}>
+                    <Text style={s.bCampoLabel}>CEP:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                </View>
+                <View style={s.bLinha}>
+                  <View style={s.bCampoVazio}>
+                    <Text style={s.bCampoLabel}>Contato / WhatsApp:</Text>
+                    <View style={s.bCampoLinha} />
+                  </View>
+                </View>
+              </View>
+            </>
+          ) : (
+            <View style={s.section}>
+              <Text style={s.secTitulo}>Identificação das Partes</Text>
+              <View style={s.partesGrid}>
+                {/* Pulse */}
+                <View style={s.parteCard}>
+                  <Text style={s.parteCardTitulo}>Contratante</Text>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>Razão Social</Text>
+                    <Text style={s.campoValor}>PULSE MARKETING INDOOR</Text>
+                  </View>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>CNPJ</Text>
+                    <Text style={s.campoValorNormal}>50.982.835/0001-62</Text>
+                  </View>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>Endereço</Text>
+                    <Text style={s.campoValorNormal}>R. General Osório, nº 3139</Text>
+                  </View>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>Bairro/Cidade</Text>
+                    <Text style={s.campoValorNormal}>Água Verde — Blumenau/SC</Text>
+                  </View>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>CEP</Text>
+                    <Text style={s.campoValorNormal}>89042-001</Text>
+                  </View>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>Email</Text>
+                    <Text style={s.campoValorNormal}>pulsemktindoor@gmail.com</Text>
+                  </View>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>Contato</Text>
+                    <Text style={s.campoValorNormal}>(47) 98469-9904</Text>
+                  </View>
+                </View>
+                {/* Outro lado */}
+                <View style={s.parteCard}>
+                  <Text style={s.parteCardTitulo}>{parteLabel}</Text>
+                  <View style={s.campoRow}>
+                    <Text style={s.campoLabel}>Razão Social</Text>
+                    <Text style={s.campoValor}>{contrato.nome_empresa || '—'}</Text>
+                  </View>
+                  {contrato.cnpj_cpf && (
+                    <View style={s.campoRow}>
+                      <Text style={s.campoLabel}>CNPJ / CPF</Text>
+                      <Text style={s.campoValorNormal}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text>
+                    </View>
+                  )}
+                  {endAnunciante && (
+                    <View style={s.campoRow}>
+                      <Text style={s.campoLabel}>Endereço</Text>
+                      <Text style={s.campoValorNormal}>{endAnunciante}</Text>
+                    </View>
+                  )}
+                  {bairroCidadeAnunciante && (
+                    <View style={s.campoRow}>
+                      <Text style={s.campoLabel}>Bairro/Cidade</Text>
+                      <Text style={s.campoValorNormal}>{bairroCidadeAnunciante}</Text>
+                    </View>
+                  )}
+                  {contrato.cep && (
+                    <View style={s.campoRow}>
+                      <Text style={s.campoLabel}>CEP</Text>
+                      <Text style={s.campoValorNormal}>{contrato.cep}</Text>
+                    </View>
+                  )}
+                  {contrato.contato && (
+                    <View style={s.campoRow}>
+                      <Text style={s.campoLabel}>Contato</Text>
+                      <Text style={s.campoValorNormal}>{fmtTelefone(contrato.contato)}</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+          )}
 
           {/* Texto de abertura */}
           <View style={{ marginBottom: 12 }}>
@@ -505,12 +728,12 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
             const ord = ['','PRIMEIRA','SEGUNDA','TERCEIRA','QUARTA','QUINTA','SEXTA','SÉTIMA','OITAVA','NONA']
             return (
             <>
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                 <Text style={s.clausulaTexto}>
                   {'1.1  O presente contrato tem por objeto a exibição do comercial da empresa '}
                   <Text style={s.negrito}>{semDados ? 'ANUNCIANTE' : contrato.nome_empresa}</Text>
-                  {' nos monitores de mídia indoor da '}
+                  {' nas telas de marketing indoor da '}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {', pelo período de '}
                   <Text style={s.negrito}>{fmtDuracao(contrato.duracao_meses)}</Text>
@@ -522,15 +745,15 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
-                <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – DO PRAZO DE ANÚNCIO</Text>
+              <View style={s.clausula}>
+                <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – DAS TELAS DE VEICULAÇÃO</Text>
                 {contrato.locais_selecionados?.length > 0 ? (
                   <>
                     <Text style={[s.clausulaTexto, { marginBottom: 5 }]}>
                       2.1  As campanhas serão veiculadas nas seguintes telas estrategicamente posicionadas:
                     </Text>
                     <View style={s.telasWrap}>
-                      {contrato.locais_selecionados.map((local, i) => (
+                      {[...new Set(contrato.locais_selecionados)].sort((a, b) => a.localeCompare(b, 'pt-BR')).map((local, i) => (
                         <View key={i} style={s.telaChip}>
                           <Text style={s.telaChipText}>{local.replace(/\s*\(.*?\)/g, '').trim()}</Text>
                         </View>
@@ -544,15 +767,25 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 )}
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – DO INVESTIMENTO</Text>
                 {(semDados || contrato.valor_mensal) ? (
                   <>
                     <View style={s.valorBox}>
                       <View>
                         <Text style={s.valorLabel}>Investimento mensal</Text>
-                        <Text style={s.valorNumero}>R$ {semDados ? B(20) : fmtMoeda(contrato.valor_mensal!)}</Text>
-                        <Text style={s.valorSub}>Vencimento: todo dia {semDados ? B(5) : contrato.dia_pagamento} do mês</Text>
+                        {semDados
+                          ? <View style={s.valorNumeroBlank} />
+                          : <Text style={s.valorNumero}>R$ {fmtMoeda(contrato.valor_mensal!)}</Text>
+                        }
+                        {semDados
+                          ? <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 3, marginTop: 7 }}>
+                              <Text style={s.valorSub}>Vencimento: todo dia</Text>
+                              <View style={{ borderBottomWidth: 1, borderBottomColor: '#555', height: 13, width: 32 }} />
+                              <Text style={s.valorSub}>do mês</Text>
+                            </View>
+                          : <Text style={s.valorSub}>Vencimento: todo dia {contrato.dia_pagamento} do mês</Text>
+                        }
                       </View>
                     </View>
                     <Text style={s.clausulaTexto}>
@@ -574,7 +807,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 )}
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>{nObrPulse}. CLÁUSULA {ord[nObrPulse]} – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {`${nObrPulse}.1  A `}
@@ -588,19 +821,41 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {' informar o '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
-                  {' sobre possíveis problemas, como: mídia incompatível com as telas, eventuais problemas técnicos com a exibição, dentre outros.'}
+                  {' sobre possíveis problemas técnicos que possam afetar a exibição do conteúdo nas telas, comprometendo-se a solucionar tais problemas no menor prazo possível.'}
                 </Text>
-                <Text style={s.clausulaTexto}>
+                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {`${nObrPulse}.3  A `}
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' fica expressamente proibida de alterar o conteúdo da mídia do '}
+                  {' é responsável pela criação e veiculação dos conteúdos publicitários nas telas, comprometendo-se a submeter o material à aprovação do '}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
-                  {' sem consentimento expresso do mesmo.'}
+                  {' antes da exibição.'}
+                </Text>
+                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                  {`${nObrPulse}.4  Os conteúdos produzidos e veiculados pela `}
+                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                  {' deverão respeitar as seguintes condições:'}
+                </Text>
+                {[
+                  'Não apresentar conteúdo de cunho político, ideológico, exploração sexual, religioso ou preconceituoso;',
+                  'Não constranger os clientes com conteúdo sexual, racista ou sexista;',
+                  'Respeitar a legislação vigente quanto à propriedade intelectual e aos direitos autorais de conteúdos audiovisuais.',
+                ].map((item, i) => (
+                  <View key={i} style={s.bullet}>
+                    <Text style={s.bulletDot}>•</Text>
+                    <Text style={s.bulletTexto}>{item}</Text>
+                  </View>
+                ))}
+                <Text style={[s.clausulaTexto, { marginTop: 4 }]}>
+                  {`${nObrPulse}.5  A `}
+                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                  {' enviará ao '}
+                  <Text style={s.negrito}>ANUNCIANTE</Text>
+                  {' relatório mensal com informações sobre a veiculação do conteúdo nas telas.'}
                 </Text>
               </View>
 
               {exclusivo && nExcl !== null && (
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>{nExcl}. CLÁUSULA {ord[nExcl]} – DA EXCLUSIVIDADE DE SEGMENTO</Text>
                   <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                     {`${nExcl}.1  A `}
@@ -626,7 +881,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </View>
               )}
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>{nObrAnunc}. CLÁUSULA {ord[nObrAnunc]} – DAS OBRIGAÇÕES DO ANUNCIANTE</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {`${nObrAnunc}.1  O `}
@@ -635,33 +890,23 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   {semDados ? ` (todo dia _____ de cada mês)` : contrato.dia_pagamento ? ` (todo dia ${contrato.dia_pagamento} de cada mês)` : ''}
                   {', até o encerramento do contrato.'}
                 </Text>
-                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
-                  {`${nObrAnunc}.2  O conteúdo da mídia utilizada nas telas da `}
-                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
-                  {' é de total responsabilidade do '}
+                <Text style={s.clausulaTexto}>
+                  {`${nObrAnunc}.2  O `}
                   <Text style={s.negrito}>ANUNCIANTE</Text>
-                  {', respeitando as seguintes condições:'}
+                  {' deverá fornecer à '}
+                  <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
+                  {' as informações, referências e materiais necessários para a criação do conteúdo publicitário, bem como aprovar o material antes de sua veiculação.'}
                 </Text>
-                {[
-                  'Não apresentar conteúdo de cunho político, ideológico, exploração sexual, religioso ou preconceituoso;',
-                  'Não constranger os clientes com conteúdo sexual, racista ou sexista;',
-                  'Respeitar a legislação vigente quanto à propriedade intelectual e aos direitos autorais de conteúdos audiovisuais.',
-                ].map((item, i) => (
-                  <View key={i} style={s.bullet}>
-                    <Text style={s.bulletDot}>•</Text>
-                    <Text style={s.bulletTexto}>{item}</Text>
-                  </View>
-                ))}
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>{nInadimpl}. CLÁUSULA {ord[nInadimpl]} – DO INADIMPLEMENTO</Text>
                 <Text style={s.clausulaTexto}>
-                  {`${nInadimpl}.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do NCPC, para a cobrança do valor devido pela parte inadimplente.`}
+                  {`${nInadimpl}.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.`}
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>{nVig}. CLÁUSULA {ord[nVig]} – VIGÊNCIA E RESCISÃO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {`${nVig}.1  A vigência deste contrato iniciará no momento em que a propaganda do `}
@@ -675,8 +920,11 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {`${nVig}.2  O não cumprimento do prazo acordado implicará ao `}<Text style={s.negrito}>ANUNCIANTE</Text>{` pagar à `}<Text style={s.negrito}>PULSE MARKETING INDOOR</Text>{` uma multa de 30% do investimento restante até a data final do contrato.`}
                 </Text>
+                <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
+                  {`${nVig}.3  Em caso de rescisão antecipada por qualquer das partes, deverá ser comunicado formalmente à outra parte com antecedência mínima de 30 (trinta) dias.`}
+                </Text>
                 <Text style={s.clausulaTexto}>
-                  {`${nVig}.3  Poderá ser rescindido este contrato nos seguintes casos: A) pelo descumprimento de qualquer cláusula prevista; B) por ajuizamento de ação que afete a credibilidade ou idoneidade de qualquer das partes; C) por pedido de concordata, decretação de falência ou dissolução judicial/extrajudicial de qualquer das partes; D) pela ocorrência comprovada de caso fortuito ou força maior.`}
+                  {`${nVig}.4  Poderá ser rescindido este contrato nos seguintes casos: A) pelo descumprimento de qualquer cláusula prevista; B) por ajuizamento de ação que afete a credibilidade ou idoneidade de qualquer das partes; C) por pedido de concordata, decretação de falência ou dissolução judicial/extrajudicial de qualquer das partes; D) pela ocorrência comprovada de caso fortuito ou força maior.`}
                 </Text>
               </View>
             </>
@@ -688,7 +936,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
           ══════════════════════════════════════ */}
           {contrato.tipo === 'parceria' && (
             <>
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                 <Text style={s.clausulaTexto}>
                   {'1.1  O objeto do presente Contrato é a parceria entre a '}
@@ -707,7 +955,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – DOS SERVIÇOS REALIZADOS PELA PULSE MARKETING INDOOR</Text>
                 <Text style={s.clausulaTexto}>
                   {'2.1  A '}
@@ -716,7 +964,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – OBRIGAÇÕES DA CONTRATADA</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'3.1  A '}
@@ -732,6 +980,20 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   <Text style={s.negrito}>PULSE MARKETING INDOOR</Text>
                   {', devendo manter a tela ligada durante todo o período acordado.'}
                 </Text>
+                {semDados && (
+                  <View style={s.bDiasTabela}>
+                    <View style={s.bDiasHeaderRow}>
+                      <View style={s.bDiasCelDia}><Text style={s.bDiasHeaderText}>Dias</Text></View>
+                      <View style={s.bDiasCelHorario}><Text style={s.bDiasHeaderText}>Horários</Text></View>
+                    </View>
+                    {['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'].map((dia) => (
+                      <View key={dia} style={s.bDiasRow}>
+                        <View style={s.bDiasCelDia}><Text style={s.bDiasText}>{dia}</Text></View>
+                        <View style={s.bDiasCelHorario} />
+                      </View>
+                    ))}
+                  </View>
+                )}
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'3.3  É dever da '}
                   <Text style={s.negrito}>CONTRATADA</Text>
@@ -748,7 +1010,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'4.1  A comercialização de espaços publicitários é de inteira responsabilidade da '}
@@ -770,7 +1032,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 ))}
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DA PERMUTA</Text>
                 <Text style={s.clausulaTexto}>
                   {'5.1  Na modalidade de permuta, a '}
@@ -783,14 +1045,14 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>6. CLÁUSULA SEXTA – DO INADIMPLEMENTO</Text>
                 <Text style={s.clausulaTexto}>
                   6.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.
                 </Text>
               </View>
 
-              <View style={s.clausula} wrap={false}>
+              <View style={s.clausula} break>
                 <Text style={s.clausulaTitulo}>7. CLÁUSULA SÉTIMA – VIGÊNCIA E RESCISÃO</Text>
                 <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                   {'7.1  A vigência deste contrato iniciará quando a '}
@@ -832,7 +1094,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
             const ord = ['','PRIMEIRA','SEGUNDA','TERCEIRA','QUARTA','QUINTA','SEXTA','SÉTIMA','OITAVA']
             return (
               <>
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>1. CLÁUSULA PRIMEIRA – DO OBJETO</Text>
                   <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                     {temPermuta
@@ -853,7 +1115,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   </Text>
                 </View>
 
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – SERVIÇOS REALIZADOS PELA PULSE MARKETING INDOOR</Text>
                   <Text style={s.clausulaTexto}>
                     {'2.1  A '}
@@ -862,7 +1124,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   </Text>
                 </View>
 
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>3. CLÁUSULA TERCEIRA – OBRIGAÇÕES DO CONTRATADO</Text>
                   <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                     {'3.1  O '}
@@ -892,7 +1154,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   </Text>
                 </View>
 
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>4. CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA PULSE MARKETING INDOOR</Text>
                   <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                     {'4.1  A '}
@@ -919,7 +1181,7 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                 </View>
 
                 {temPermuta && (
-                  <View style={s.clausula} wrap={false}>
+                  <View style={s.clausula}>
                     <Text style={s.clausulaTitulo}>5. CLÁUSULA QUINTA – DA PERMUTA (TELA MARKETING INDOOR)</Text>
                     <Text style={s.clausulaTexto}>
                       {'5.1  Na modalidade de permuta, a '}
@@ -933,15 +1195,25 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   </View>
                 )}
 
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>{nValor}. CLÁUSULA {ord[nValor]} – DO VALOR E DO PAGAMENTO (TELA CORPORATIVA)</Text>
                   {(semDados || contrato.valor_mensal) ? (
                     <>
                       <View style={s.valorBox}>
                         <View>
                           <Text style={s.valorLabel}>Valor mensal — Tela Corporativa</Text>
-                          <Text style={s.valorNumero}>R$ {semDados ? B(20) : fmtMoeda(contrato.valor_mensal!)}</Text>
-                          <Text style={s.valorSub}>Vencimento: todo dia {semDados ? B(5) : contrato.dia_pagamento} do mês</Text>
+                          {semDados
+                            ? <View style={s.valorNumeroBlank} />
+                            : <Text style={s.valorNumero}>R$ {fmtMoeda(contrato.valor_mensal!)}</Text>
+                          }
+                          {semDados
+                            ? <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 3, marginTop: 7 }}>
+                                <Text style={s.valorSub}>Vencimento: todo dia</Text>
+                                <View style={{ borderBottomWidth: 1, borderBottomColor: '#555', height: 13, width: 32 }} />
+                                <Text style={s.valorSub}>do mês</Text>
+                              </View>
+                            : <Text style={s.valorSub}>Vencimento: todo dia {contrato.dia_pagamento} do mês</Text>
+                          }
                         </View>
                       </View>
                       <Text style={s.clausulaTexto}>
@@ -963,14 +1235,14 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
                   )}
                 </View>
 
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>{nInadimpl}. CLÁUSULA {ord[nInadimpl]} – DO INADIMPLEMENTO</Text>
                   <Text style={s.clausulaTexto}>
                     {`${nInadimpl}.1  Em caso de inadimplemento, este contrato servirá como título executivo extrajudicial, na forma do Art. 784, III do CPC, para a cobrança do valor devido pela parte inadimplente.`}
                   </Text>
                 </View>
 
-                <View style={s.clausula} wrap={false}>
+                <View style={s.clausula}>
                   <Text style={s.clausulaTitulo}>{nVig}. CLÁUSULA {ord[nVig]} – VIGÊNCIA E RESCISÃO</Text>
                   <Text style={[s.clausulaTexto, { marginBottom: 4 }]}>
                     {`${nVig}.1  A vigência deste contrato iniciará quando a `}
@@ -1004,26 +1276,49 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
           })()}
 
           {/* ── DATA E ASSINATURAS ── */}
-          {contrato.tipo === 'corporativa' && (
-            <Text style={s.dataInstalacao}>Data de Instalação: _______ / _______ / _____________.</Text>
-          )}
-          <Text style={s.dataLocal}>{format(new Date(), "'Blumenau/SC,' dd 'de' MMMM 'de' yyyy'.'", { locale: ptBR })}</Text>
+          <View wrap={false}>
+            {contrato.tipo === 'corporativa' && (
+              <Text style={s.dataInstalacao}>Data de Instalação: _______ / _______ / _____________.</Text>
+            )}
+            {semDados ? (
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 5, marginBottom: 18, marginTop: 6 }}>
+                <Text style={{ fontSize: 9.5, color: TEXT }}>Blumenau/SC,</Text>
+                <View style={{ width: 44, borderBottomWidth: 0.75, borderBottomColor: '#888', height: 15 }} />
+                <Text style={{ fontSize: 9.5, color: TEXT }}>de</Text>
+                <View style={{ width: 130, borderBottomWidth: 0.75, borderBottomColor: '#888', height: 15 }} />
+                <Text style={{ fontSize: 9.5, color: TEXT }}>de</Text>
+                <View style={{ width: 54, borderBottomWidth: 0.75, borderBottomColor: '#888', height: 15 }} />
+              </View>
+            ) : (
+              <Text style={s.dataLocal}>{format(new Date(), "'Blumenau/SC,' dd 'de' MMMM 'de' yyyy'.'", { locale: ptBR })}</Text>
+            )}
 
-          <View style={s.assinaturas}>
-            <View style={s.assinaturaBox}>
-              <View style={s.assinaturaLinha} />
-              <Text style={s.assinaturaLabel}>PULSE MARKETING INDOOR</Text>
-              <Text style={s.assinaturaDoc}>CNPJ: 50.982.835/0001-62</Text>
-            </View>
-            <View style={s.assinaturaBox}>
-              <View style={s.assinaturaLinha} />
-              <Text style={s.assinaturaLabel}>{semDados ? parteLabel.toUpperCase() : contrato.nome_empresa.toUpperCase()}</Text>
-              {semDados ? (
-                <Text style={s.assinaturaDoc}>CNPJ / CPF: {B(25)}</Text>
-              ) : contrato.cnpj_cpf ? (
-                <Text style={s.assinaturaDoc}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text>
-              ) : null}
-            </View>
+            {semDados ? (
+              <View style={[s.assinaturas, { marginTop: 20 }]}>
+                <View style={s.assinaturaBox}>
+                  <View style={s.assinaturaLinhaBlank} />
+                  <Text style={s.assinaturaLabel}>PULSE MARKETING INDOOR</Text>
+                  <Text style={s.assinaturaDoc}>CNPJ: 50.982.835/0001-62</Text>
+                </View>
+                <View style={s.assinaturaBox}>
+                  <View style={s.assinaturaLinhaBlank} />
+                  <Text style={s.assinaturaLabel}>{parteLabel.toUpperCase()}</Text>
+                </View>
+              </View>
+            ) : (
+              <View style={s.assinaturas}>
+                <View style={s.assinaturaBox}>
+                  <View style={s.assinaturaLinha} />
+                  <Text style={s.assinaturaLabel}>PULSE MARKETING INDOOR</Text>
+                  <Text style={s.assinaturaDoc}>CNPJ: 50.982.835/0001-62</Text>
+                </View>
+                <View style={s.assinaturaBox}>
+                  <View style={s.assinaturaLinha} />
+                  <Text style={s.assinaturaLabel}>{contrato.nome_empresa.toUpperCase()}</Text>
+                  {contrato.cnpj_cpf ? <Text style={s.assinaturaDoc}>{fmtCnpjCpf(contrato.cnpj_cpf)}</Text> : null}
+                </View>
+              </View>
+            )}
           </View>
 
         </View>

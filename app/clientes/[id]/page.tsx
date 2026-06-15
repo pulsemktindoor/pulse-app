@@ -113,8 +113,8 @@ export default function ClientePerfilPage() {
   function statusContrato() {
     if (diasRestantes === null) return null
     if (diasRestantes < 0) return <Badge variant="destructive">Contrato vencido</Badge>
-    if (diasRestantes <= 30) return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Vence em {diasRestantes}d</Badge>
-    return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ativo</Badge>
+    if (diasRestantes <= 30) return <Badge className="bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/20">Vence em {diasRestantes}d</Badge>
+    return <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/20">Ativo</Badge>
   }
 
   return (
@@ -123,13 +123,13 @@ export default function ClientePerfilPage() {
       <div className="mb-6">
         <button
           onClick={() => router.push('/clientes')}
-          className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-700 mb-4 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Clientes
         </button>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900">{cliente.nome_empresa}</h1>
+            <h1 className="text-2xl font-bold text-zinc-100">{cliente.nome_empresa}</h1>
             <p className="text-zinc-500 text-sm mt-0.5">{cliente.nome_responsavel}</p>
           </div>
           {statusContrato()}
@@ -140,46 +140,46 @@ export default function ClientePerfilPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <Card>
           <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
+            <div className="flex items-center gap-2 text-zinc-500 text-xs mb-1">
               <DollarSign className="w-3.5 h-3.5" /> Mensalidade
             </div>
-            <p className="text-lg font-bold text-green-600">
+            <p className="text-lg font-bold text-green-400">
               R$ {cliente.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
+            <div className="flex items-center gap-2 text-zinc-500 text-xs mb-1">
               <DollarSign className="w-3.5 h-3.5" /> Total pago
             </div>
-            <p className="text-lg font-bold text-zinc-800">
+            <p className="text-lg font-bold text-zinc-200">
               {totalPago != null
                 ? `R$ ${totalPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                 : '--'}
             </p>
             {mesesAtivo != null && (
-              <p className="text-xs text-zinc-400">{mesesAtivo} meses</p>
+              <p className="text-xs text-zinc-500">{mesesAtivo} meses</p>
             )}
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
+            <div className="flex items-center gap-2 text-zinc-500 text-xs mb-1">
               <TrendingUp className="w-3.5 h-3.5" /> Exibições total
             </div>
-            <p className="text-lg font-bold text-zinc-800">
+            <p className="text-lg font-bold text-zinc-200">
               {totalExibicoes > 0 ? totalExibicoes.toLocaleString('pt-BR') : '--'}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <div className="flex items-center gap-2 text-zinc-400 text-xs mb-1">
+            <div className="flex items-center gap-2 text-zinc-500 text-xs mb-1">
               <Clock className="w-3.5 h-3.5" /> Relatórios
             </div>
-            <p className="text-lg font-bold text-zinc-800">{relatorios.length}</p>
-            <p className="text-xs text-zinc-400">{enviados.length} enviado(s)</p>
+            <p className="text-lg font-bold text-zinc-200">{relatorios.length}</p>
+            <p className="text-xs text-zinc-500">{enviados.length} enviado(s)</p>
           </CardContent>
         </Card>
       </div>
@@ -187,26 +187,26 @@ export default function ClientePerfilPage() {
       {/* Dados do cliente */}
       <Card className="mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-zinc-600 uppercase tracking-wide">Informações</CardTitle>
+          <CardTitle className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">Informações</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3 text-sm">
-            <Phone className="w-4 h-4 text-zinc-400 shrink-0" />
+            <Phone className="w-4 h-4 text-zinc-500 shrink-0" />
             <a
               href={`https://wa.me/55${cliente.whatsapp.replace(/\D/g, '')}`}
               target="_blank"
               rel="noreferrer"
-              className="text-zinc-700 hover:text-green-600 transition-colors"
+              className="text-zinc-300 hover:text-green-400 transition-colors"
             >
               {cliente.whatsapp}
             </a>
           </div>
           {cliente.locais?.length > 0 && (
             <div className="flex items-start gap-3">
-              <Monitor className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+              <Monitor className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
               <div className="flex flex-wrap gap-1.5">
                 {cliente.locais.map((l) => (
-                  <span key={l} className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">
+                  <span key={l} className="text-xs bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
                     {l}
                   </span>
                 ))}
@@ -215,8 +215,8 @@ export default function ClientePerfilPage() {
           )}
           {(cliente.data_inicio_contrato || cliente.data_fim_contrato) && (
             <div className="flex items-center gap-3 text-sm">
-              <CalendarDays className="w-4 h-4 text-zinc-400 shrink-0" />
-              <span className="text-zinc-600">
+              <CalendarDays className="w-4 h-4 text-zinc-500 shrink-0" />
+              <span className="text-zinc-400">
                 {cliente.data_inicio_contrato
                   ? format(parseISO(cliente.data_inicio_contrato), 'dd/MM/yyyy')
                   : '?'}
@@ -228,7 +228,7 @@ export default function ClientePerfilPage() {
             </div>
           )}
           {cliente.dia_envio_relatorio && (
-            <p className="text-xs text-zinc-400 ml-7">
+            <p className="text-xs text-zinc-500 ml-7">
               Relatório enviado todo dia {cliente.dia_envio_relatorio} do mês
             </p>
           )}
@@ -242,15 +242,15 @@ export default function ClientePerfilPage() {
         </h2>
 
         {relatorios.length === 0 ? (
-          <p className="text-zinc-400 text-sm py-4">Nenhum relatório cadastrado para este cliente.</p>
+          <p className="text-zinc-500 text-sm py-4">Nenhum relatório cadastrado para este cliente.</p>
         ) : (
           <div className="space-y-2">
             {relatorios.map((r) => (
-              <Card key={r.id} className={r.enviado ? 'opacity-70' : 'border-orange-200'}>
+              <Card key={r.id} className={r.enviado ? 'opacity-60' : 'border-orange-500/30'}>
                 <CardContent className="py-3">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="font-medium text-zinc-800 capitalize">
+                      <p className="font-medium text-zinc-200 capitalize">
                         {format(parseISO(r.mes_referencia), 'MMMM/yyyy', { locale: ptBR })}
                       </p>
                       <div className="flex gap-3 text-xs text-zinc-500 mt-0.5">
@@ -271,7 +271,7 @@ export default function ClientePerfilPage() {
                           size="sm"
                           onClick={() => enviarWhatsApp(r)}
                           variant="outline"
-                          className="text-green-700 border-green-300 hover:bg-green-50 h-7 text-xs"
+                          className="text-green-400 border-green-500/30 hover:bg-green-500/10 h-7 text-xs"
                         >
                           <Send className="w-3 h-3 mr-1" /> Reenviar
                         </Button>
@@ -287,7 +287,7 @@ export default function ClientePerfilPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-red-500 border-red-200 hover:bg-red-50 px-2 h-7"
+                        className="text-red-400 border-red-500/30 hover:bg-red-500/10 px-2 h-7"
                         onClick={() => excluirRelatorio(r.id)}
                       >
                         <Trash2 className="w-3 h-3" />

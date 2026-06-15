@@ -41,11 +41,11 @@ const emptyForm = {
 }
 
 function StatusContrato({ dataFim }: { dataFim: string | null }) {
-  if (!dataFim) return <Badge className="bg-zinc-100 text-zinc-500 hover:bg-zinc-100">Sem data</Badge>
+  if (!dataFim) return <Badge className="bg-white/[0.07] text-zinc-400 hover:bg-white/[0.07]">Sem data</Badge>
   const dias = differenceInDays(parseISO(dataFim), new Date())
-  if (dias < 0) return <Badge variant="destructive">Vencido</Badge>
-  if (dias <= 30) return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Vence em {dias}d</Badge>
-  return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ativo</Badge>
+  if (dias < 0) return <Badge className="bg-red-500/20 text-red-400 hover:bg-red-500/20">Vencido</Badge>
+  if (dias <= 30) return <Badge className="bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20">Vence em {dias}d</Badge>
+  return <Badge className="bg-green-500/20 text-green-300 hover:bg-green-500/20">Ativo</Badge>
 }
 
 export default function ParceirosPage() {
@@ -127,7 +127,7 @@ export default function ParceirosPage() {
     <div className="p-6 md:p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Parceiros</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">Parceiros</h1>
           <p className="text-zinc-500 text-sm mt-1">
             {parceiros.length} local(is) parceiro(s)
             {alertas.length > 0 && ` · ${alertas.length} com contrato em alerta`}
@@ -144,7 +144,7 @@ export default function ParceirosPage() {
           {alertas.map((p) => {
             const dias = differenceInDays(parseISO(p.data_fim_contrato!), new Date())
             return (
-              <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm border ${dias < 0 ? 'bg-red-50 text-red-800 border-red-200' : 'bg-yellow-50 text-yellow-800 border-yellow-200'}`}>
+              <div key={p.id} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm border ${dias < 0 ? 'bg-red-500/10 text-red-300 border-red-500/30' : 'bg-amber-500/10 text-amber-300 border-amber-500/30'}`}>
                 <CalendarDays className="w-4 h-4 shrink-0" />
                 <span>
                   <strong>{p.nome_local}</strong> — contrato {dias < 0 ? `vencido há ${Math.abs(dias)} dia(s)` : `vence em ${dias} dia(s)`}
@@ -161,7 +161,7 @@ export default function ParceirosPage() {
         <p className="text-zinc-400 text-sm">Carregando...</p>
       ) : parceiros.length === 0 ? (
         <div className="text-center py-16">
-          <Handshake className="w-12 h-12 text-zinc-200 mx-auto mb-3" />
+          <Handshake className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
           <p className="text-zinc-400">Nenhum parceiro cadastrado.</p>
         </div>
       ) : (
@@ -176,13 +176,13 @@ export default function ParceirosPage() {
                 <p className="text-sm text-zinc-500">{p.nome_responsavel}</p>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-zinc-600">
+                <div className="flex items-center gap-2 text-sm text-zinc-400">
                   <Phone className="w-3.5 h-3.5 text-zinc-400" />
                   <a
                     href={`https://wa.me/55${p.whatsapp.replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="hover:text-green-600 transition-colors"
+                    className="hover:text-green-400 transition-colors"
                   >
                     {p.whatsapp}
                   </a>
@@ -201,11 +201,11 @@ export default function ParceirosPage() {
                 {p.dia_envio_relatorio && (
                   <p className="text-xs text-zinc-500">Relatório: dia <strong>{p.dia_envio_relatorio}</strong> de cada mês</p>
                 )}
-                <div className="flex gap-2 pt-2 border-t border-zinc-100">
+                <div className="flex gap-2 pt-2 border-t border-white/[0.08]">
                   <Button size="sm" variant="outline" className="flex-1 text-xs h-8" onClick={() => abrirEdicao(p)}>
                     <Pencil className="w-3 h-3 mr-1" /> Editar
                   </Button>
-                  <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8" onClick={() => excluir(p.id, p.nome_local)}>
+                  <Button size="sm" variant="outline" className="text-red-400 border-red-500/30 hover:bg-red-500/10 text-xs h-8" onClick={() => excluir(p.id, p.nome_local)}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>

@@ -30,7 +30,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-8">
           <Image
@@ -42,12 +42,12 @@ export default function LoginPage() {
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 p-8">
-          <h1 className="text-xl font-semibold text-zinc-800 mb-6">Entrar</h1>
+        <div className="bg-white/[0.05] backdrop-blur-xl rounded-2xl border border-white/[0.09] p-8">
+          <h1 className="text-xl font-semibold text-zinc-100 mb-6">Entrar</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-1">
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
                 Email
               </label>
               <input
@@ -55,13 +55,13 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-white/[0.07] border border-white/[0.12] rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="seu@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-700 mb-1">
+              <label className="block text-sm font-medium text-zinc-300 mb-1">
                 Senha
               </label>
               <input
@@ -69,13 +69,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-zinc-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 bg-white/[0.07] border border-white/[0.12] rounded-lg text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-red-400">{error}</p>
             )}
 
             <button

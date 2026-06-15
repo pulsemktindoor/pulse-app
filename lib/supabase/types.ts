@@ -21,6 +21,7 @@ export type Database = {
           cidade: string | null
           uf: string | null
           cep: string | null
+          ativo: boolean
           created_at: string
         }
         Insert: {
@@ -42,6 +43,7 @@ export type Database = {
           cidade?: string | null
           uf?: string | null
           cep?: string | null
+          ativo?: boolean
           created_at?: string
         }
         Update: {
@@ -63,6 +65,7 @@ export type Database = {
           cidade?: string | null
           uf?: string | null
           cep?: string | null
+          ativo?: boolean
           created_at?: string
         }
       }
@@ -161,7 +164,9 @@ export type Database = {
       relatorios: {
         Row: {
           id: string
-          cliente_id: string
+          cliente_id: string | null
+          parceiro_id: string | null
+          local_id: string | null
           mes_referencia: string
           total_exibicoes: number | null
           media_diaria: number | null
@@ -172,7 +177,9 @@ export type Database = {
         }
         Insert: {
           id?: string
-          cliente_id: string
+          cliente_id?: string | null
+          parceiro_id?: string | null
+          local_id?: string | null
           mes_referencia: string
           total_exibicoes?: number | null
           media_diaria?: number | null
@@ -183,13 +190,94 @@ export type Database = {
         }
         Update: {
           id?: string
-          cliente_id?: string
+          cliente_id?: string | null
+          parceiro_id?: string | null
+          local_id?: string | null
           mes_referencia?: string
           total_exibicoes?: number | null
           media_diaria?: number | null
           enviado?: boolean
           data_envio?: string | null
           num_campanhas?: number
+          created_at?: string
+        }
+      }
+      locais: {
+        Row: {
+          id: string
+          nome_local: string
+          nome_responsavel: string | null
+          whatsapp: string | null
+          cnpj_cpf: string | null
+          endereco: string | null
+          permuta: string | null
+          observacoes: string | null
+          data_inicio_contrato: string | null
+          data_fim_contrato: string | null
+          data_inicio_veiculacao: string | null
+          data_fim_veiculacao: string | null
+          dia_envio_relatorio: number | null
+          ativo: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nome_local: string
+          nome_responsavel?: string | null
+          whatsapp?: string | null
+          cnpj_cpf?: string | null
+          endereco?: string | null
+          permuta?: string | null
+          observacoes?: string | null
+          data_inicio_contrato?: string | null
+          data_fim_contrato?: string | null
+          data_inicio_veiculacao?: string | null
+          data_fim_veiculacao?: string | null
+          dia_envio_relatorio?: number | null
+          ativo?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          nome_local?: string
+          nome_responsavel?: string | null
+          whatsapp?: string | null
+          cnpj_cpf?: string | null
+          endereco?: string | null
+          permuta?: string | null
+          observacoes?: string | null
+          data_inicio_contrato?: string | null
+          data_fim_contrato?: string | null
+          data_inicio_veiculacao?: string | null
+          data_fim_veiculacao?: string | null
+          dia_envio_relatorio?: number | null
+          ativo?: boolean
+          created_at?: string
+        }
+      }
+      telas: {
+        Row: {
+          id: string
+          local_id: string
+          nome: string
+          identificacao: string | null
+          ativo: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          local_id: string
+          nome: string
+          identificacao?: string | null
+          ativo?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          local_id?: string
+          nome?: string
+          identificacao?: string | null
+          ativo?: boolean
           created_at?: string
         }
       }

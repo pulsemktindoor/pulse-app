@@ -18,6 +18,7 @@ type RelatorioComVinculo = {
   media_diaria: number | null
   enviado: boolean
   data_envio: string | null
+  num_campanhas: number
   clientes: { nome_empresa: string; nome_responsavel: string; whatsapp: string } | null
   parceiros: { nome_local: string; nome_responsavel: string; whatsapp: string } | null
 }
@@ -62,8 +63,11 @@ export default function RelatoriosPage() {
     const numero = contato.whatsapp.replace(/\D/g, '')
     const primeiroNome = contato.nome.split(' ')[0]
     const exibicoes = r.total_exibicoes != null ? r.total_exibicoes.toLocaleString('pt-BR') : '--'
+    const plural = (r.num_campanhas ?? 1) > 1
     const msg = encodeURIComponent(
-      `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
+      plural
+        ? `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições dos seus anúncios.\nOs anúncios tiveram *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
+        : `${saudacao()} ${primeiroNome}, tudo bem?\n\nPassando aqui para enviar o relatório de exibições do seu anúncio.\nO anúncio teve *${exibicoes} exibições* nos últimos 30 dias.\n\nQualquer dúvida fico à disposição.`
     )
     window.open(`https://wa.me/55${numero}?text=${msg}`, '_blank')
     const { error } = await supabase
@@ -79,13 +83,22 @@ export default function RelatoriosPage() {
     if (error) { toast.error('Erro ao excluir') } else { toast.success('Excluído'); loadData() }
   }
 
-  const pendentes = relatorios.filter((r) => !r.enviado)
-  const enviados = relatorios.filter((r) => r.enviado)
+  const pendentes = relatorios
+    .filter((r) => !r.enviado)
+    .sort((a, b) => b.mes_referencia.localeCompare(a.mes_referencia))
+  const enviados = relatorios
+    .filter((r) => r.enviado)
+    .sort((a, b) => {
+      if (!a.data_envio && !b.data_envio) return b.mes_referencia.localeCompare(a.mes_referencia)
+      if (!a.data_envio) return 1
+      if (!b.data_envio) return -1
+      return new Date(b.data_envio).getTime() - new Date(a.data_envio).getTime()
+    })
 
   return (
     <div className="p-6 md:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900">Relatórios</h1>
+        <h1 className="text-2xl font-bold text-zinc-100">Relatórios</h1>
         <p className="text-zinc-500 text-sm mt-1">
           {pendentes.length} pendente(s) · {enviados.length} enviado(s)
         </p>
@@ -100,15 +113,15 @@ export default function RelatoriosPage() {
               <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">Pendentes de envio</h2>
               <div className="space-y-3">
                 {pendentes.map((r) => (
-                  <Card key={r.id} className="border-orange-200">
+                  <Card key={r.id} className="border-orange-500/30">
                     <CardContent className="py-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-zinc-900 truncate">{getNome(r)}</p>
+                          <p className="font-semibold text-zinc-100 truncate">{getNome(r)}</p>
                           <p className="text-sm text-zinc-500">
                             {format(parseISO(r.mes_referencia), 'MMMM/yyyy', { locale: ptBR })}
                           </p>
-                          <div className="mt-1 flex gap-4 text-sm text-zinc-600">
+                          <div className="mt-1 flex gap-4 text-sm text-zinc-400">
                             {r.total_exibicoes != null && (
                               <span><span className="text-zinc-400">Exibições:</span> {r.total_exibicoes.toLocaleString('pt-BR')}</span>
                             )}
@@ -121,7 +134,7 @@ export default function RelatoriosPage() {
                           <Button size="sm" onClick={() => enviarViaWhatsApp(r)} className="bg-green-600 hover:bg-green-700 text-white">
                             <Send className="w-3.5 h-3.5 mr-1.5" /> Enviar
                           </Button>
-                          <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 px-2" onClick={() => excluirRelatorio(r.id)}>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-500/30 hover:bg-red-500/10 px-2" onClick={() => excluirRelatorio(r.id)}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
@@ -142,14 +155,14 @@ export default function RelatoriosPage() {
                     <CardContent className="py-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-zinc-700">{getNome(r)}</p>
+                          <p className="font-medium text-zinc-200">{getNome(r)}</p>
                           <p className="text-xs text-zinc-400">
                             {format(parseISO(r.mes_referencia), 'MMMM/yyyy', { locale: ptBR })}
                             {r.data_envio && ` · enviado em ${format(parseISO(r.data_envio), 'dd/MM/yyyy')}`}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button size="sm" onClick={() => enviarViaWhatsApp(r)} variant="outline" className="text-green-700 border-green-300 hover:bg-green-50 h-7 text-xs">
+                          <Button size="sm" onClick={() => enviarViaWhatsApp(r)} variant="outline" className="text-green-400 border-green-500/30 hover:bg-green-500/10 h-7 text-xs">
                             <Send className="w-3 h-3 mr-1" /> Reenviar
                           </Button>
                           <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 px-2 h-7" onClick={() => excluirRelatorio(r.id)}>
@@ -166,9 +179,9 @@ export default function RelatoriosPage() {
 
           {relatorios.length === 0 && (
             <div className="text-center py-16">
-              <FileText className="w-12 h-12 text-zinc-200 mx-auto mb-3" />
+              <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
               <p className="text-zinc-400">Nenhum relatório cadastrado.</p>
-              <p className="text-zinc-300 text-sm mt-1">Use "Gerar Relatório" para criar um.</p>
+              <p className="text-zinc-500 text-sm mt-1">Use &quot;Gerar Relatório&quot; para criar um.</p>
             </div>
           )}
         </>

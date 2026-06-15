@@ -13,24 +13,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Search, Phone, Monitor, CalendarDays, Pencil, Trash2, User } from 'lucide-react'
+import { Plus, Search, Phone, Monitor, CalendarDays, Pencil, Trash2, User, EyeOff, Eye } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { format, parseISO, differenceInDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
-// Nomes das telas — sem parênteses no relatório, com parênteses aqui para identificar
-export const LOCAIS_DISPONIVEIS = [
-  'Quality Body 1 (Halteres)',
-  'Quality Body 2 (Saída)',
-  'SB Carnes',
-  "Bistrô PaiD'égua 1 (Mesas)",
-  "Bistrô PaiD'égua 2 (Camarote)",
-]
-
-// Nome limpo para relatório (sem parênteses)
 export function nomeTelaRelatorio(nome: string) {
   return nome.replace(/\s*\(.*?\)/g, '').trim()
 }
@@ -39,17 +28,107 @@ function StatusContrato({ dataFim }: { dataFim: string | null }) {
   if (!dataFim) return null
   const dias = differenceInDays(parseISO(dataFim), new Date())
   if (dias < 0) return <Badge variant="destructive">Contrato vencido</Badge>
-  if (dias <= 30) return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Vence em {dias}d</Badge>
-  return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Ativo</Badge>
+  if (dias <= 30) return <Badge className="bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/20">Vence em {dias}d</Badge>
+  return <Badge className="bg-green-500/20 text-green-300 hover:bg-green-500/20">Ativo</Badge>
+}
+
+function ClienteCard({
+  c,
+  inativo = false,
+  onEditar,
+  onDesativar,
+  onExcluir,
+}: {
+  c: Cliente
+  inativo?: boolean
+  onEditar: (c: Cliente) => void
+  onDesativar: (c: Cliente) => void
+  onExcluir: (id: string, nome: string) => void
+}) {
+  return (
+    <Card className={`transition-opacity ${inativo ? 'opacity-50' : ''}`}>
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-base">{c.nome_empresa}</CardTitle>
+          <Badge variant="outline" className="text-blue-400 border-blue-500/30 bg-blue-500/10 shrink-0">
+            {c.plano} {c.plano === 1 ? 'tela' : 'telas'}
+          </Badge>
+        </div>
+        <p className="text-sm text-zinc-500">{c.nome_responsavel}</p>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="flex items-center gap-2 text-sm text-zinc-400">
+          <Phone className="w-3.5 h-3.5 text-zinc-500" />
+          {c.whatsapp}
+        </div>
+        {c.locais?.length > 0 && (
+          <div className="flex items-start gap-2">
+            <Monitor className="w-3.5 h-3.5 text-zinc-500 mt-0.5 shrink-0" />
+            <div className="flex flex-wrap gap-1">
+              {c.locais.map((l) => (
+                <span key={l} className="text-xs bg-white/[0.07] text-zinc-400 px-2 py-0.5 rounded-full">
+                  {l}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {c.data_fim_contrato && (
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
+            <CalendarDays className="w-3.5 h-3.5 text-zinc-500" />
+            <span className="text-xs">
+              Contrato até {format(parseISO(c.data_fim_contrato), 'dd/MM/yyyy')}
+            </span>
+          </div>
+        )}
+        <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between">
+          <p className="text-lg font-bold text-green-400">
+            R$ {c.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
+          </p>
+          {!inativo && <StatusContrato dataFim={c.data_fim_contrato} />}
+        </div>
+        <div className="flex gap-2 pt-1">
+          {!inativo && (
+            <Link href={`/clientes/${c.id}`} className="flex-1">
+              <Button size="sm" variant="outline" className="w-full text-xs h-8 text-blue-400 border-blue-500/30 hover:bg-blue-500/10">
+                <User className="w-3 h-3 mr-1" /> Ver perfil
+              </Button>
+            </Link>
+          )}
+          {!inativo && (
+            <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => onEditar(c)}>
+              <Pencil className="w-3 h-3" />
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className={`text-xs h-8 ${inativo ? 'flex-1 text-green-400 border-green-500/30 hover:bg-green-500/10' : 'text-zinc-500 border-white/[0.10] hover:bg-white/[0.05]'}`}
+            onClick={() => onDesativar(c)}
+            title={inativo ? 'Reativar cliente' : 'Desativar cliente'}
+          >
+            {inativo ? <><Eye className="w-3 h-3 mr-1" /> Reativar</> : <EyeOff className="w-3 h-3" />}
+          </Button>
+          {!inativo && (
+            <Button size="sm" variant="outline" className="text-red-400 border-red-500/30 hover:bg-red-500/10 text-xs h-8" onClick={() => onExcluir(c.id, c.nome_empresa)}>
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [locaisDisponiveis, setLocaisDisponiveis] = useState<string[]>([])
   const [busca, setBusca] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editando, setEditando] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(true)
   const [salvando, setSalvando] = useState(false)
+  const [mostrarInativos, setMostrarInativos] = useState(false)
 
   const [form, setForm] = useState({
     nome_empresa: '',
@@ -73,6 +152,15 @@ export default function ClientesPage() {
 
   useEffect(() => {
     loadClientes()
+    supabase.from('telas').select('nome').eq('ativo', true).order('nome').then(({ data }) => {
+      if (data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const nomes = (data as any[]).map((t) => t.nome as string)
+        const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/gi, '')
+        const seen = new Set<string>()
+        setLocaisDisponiveis(nomes.filter(n => { const k = norm(n); return seen.has(k) ? false : !!seen.add(k) }))
+      }
+    })
   }, [])
 
   async function loadClientes() {
@@ -125,6 +213,17 @@ export default function ClientesPage() {
     setSalvando(false)
   }
 
+  async function toggleAtivo(c: Cliente) {
+    const novoAtivo = !c.ativo
+    const { error } = await supabase.from('clientes').update({ ativo: novoAtivo }).eq('id', c.id)
+    if (error) {
+      toast.error('Erro ao atualizar cliente')
+    } else {
+      toast.success(novoAtivo ? 'Cliente reativado' : 'Cliente desativado')
+      loadClientes()
+    }
+  }
+
   async function excluirCliente(id: string, nome: string) {
     if (!confirm(`Excluir "${nome}"? Isso remove também os contratos e relatórios vinculados.`)) return
     const { error } = await supabase.from('clientes').delete().eq('id', id)
@@ -136,7 +235,17 @@ export default function ClientesPage() {
     }
   }
 
+  function normalizarNome(s: string) {
+    return s.toLowerCase().replace(/[^a-z0-9]/gi, '')
+  }
+
   function abrirEdicao(c: Cliente) {
+    const locaisMapeados = [...new Set(
+      (c.locais || []).map(stored => {
+        const match = locaisDisponiveis.find(avail => normalizarNome(avail) === normalizarNome(stored))
+        return match ?? stored
+      })
+    )]
     setEditando(c)
     setForm({
       nome_empresa: c.nome_empresa,
@@ -144,7 +253,7 @@ export default function ClientesPage() {
       whatsapp: c.whatsapp,
       plano: c.plano,
       valor_mensal: String(c.valor_mensal),
-      locais: c.locais || [],
+      locais: locaisMapeados,
       data_inicio_contrato: c.data_inicio_contrato || '',
       data_fim_contrato: c.data_fim_contrato || '',
       dia_envio_relatorio: String(c.dia_envio_relatorio || 5),
@@ -213,17 +322,35 @@ export default function ClientesPage() {
     }))
   }
 
-  const clientesFiltrados = clientes.filter((c) =>
-    c.nome_empresa.toLowerCase().includes(busca.toLowerCase()) ||
-    c.nome_responsavel.toLowerCase().includes(busca.toLowerCase())
+  const clientesAtivos = clientes.filter((c) =>
+    c.ativo !== false && (
+      c.nome_empresa.toLowerCase().includes(busca.toLowerCase()) ||
+      c.nome_responsavel.toLowerCase().includes(busca.toLowerCase())
+    )
+  )
+  const clientesInativos = clientes.filter((c) =>
+    c.ativo === false && (
+      c.nome_empresa.toLowerCase().includes(busca.toLowerCase()) ||
+      c.nome_responsavel.toLowerCase().includes(busca.toLowerCase())
+    )
   )
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Clientes</h1>
-          <p className="text-zinc-500 text-sm mt-1">{clientes.length} cliente(s) cadastrado(s)</p>
+          <h1 className="text-2xl font-bold text-zinc-100">Clientes</h1>
+          <p className="text-zinc-500 text-sm mt-1">
+            {clientesAtivos.length} ativo(s)
+            {clientesInativos.length > 0 && (
+              <button
+                onClick={() => setMostrarInativos((v) => !v)}
+                className="ml-2 underline text-zinc-500 hover:text-zinc-300"
+              >
+                · {clientesInativos.length} inativo(s)
+              </button>
+            )}
+          </p>
         </div>
         <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => setDialogOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
@@ -283,8 +410,8 @@ export default function ClientesPage() {
               </div>
 
               {/* Endereço */}
-              <div className="border-t border-zinc-100 pt-4">
-                <p className="text-sm font-medium text-zinc-700 mb-3">Endereço</p>
+              <div className="border-t border-white/[0.08] pt-4">
+                <p className="text-sm font-medium text-zinc-300 mb-3">Endereço</p>
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2 space-y-1">
@@ -355,7 +482,7 @@ export default function ClientesPage() {
               <div className="space-y-2">
                 <Label>Telas do cliente</Label>
                 <div className="flex flex-wrap gap-2">
-                  {LOCAIS_DISPONIVEIS.map((local) => (
+                  {locaisDisponiveis.map((local) => (
                     <button
                       key={local}
                       type="button"
@@ -363,7 +490,7 @@ export default function ClientesPage() {
                       className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                         form.locais.includes(local)
                           ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-zinc-300 text-zinc-600 hover:border-blue-400'
+                          : 'border-white/[0.15] text-zinc-400 hover:border-blue-400'
                       }`}
                     >
                       {local}
@@ -373,8 +500,8 @@ export default function ClientesPage() {
               </div>
 
               {/* Contrato */}
-              <div className="border-t border-zinc-100 pt-4">
-                <p className="text-sm font-medium text-zinc-700 mb-3">Período do contrato</p>
+              <div className="border-t border-white/[0.08] pt-4">
+                <p className="text-sm font-medium text-zinc-300 mb-3">Período do contrato</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label>Início do anúncio</Label>
@@ -409,7 +536,7 @@ export default function ClientesPage() {
                   />
                   <span className="text-sm text-zinc-500">de cada mês</span>
                 </div>
-                <p className="text-xs text-zinc-400">Ex: 5 = você recebe lembrete todo dia 5</p>
+                <p className="text-xs text-zinc-500">Ex: 5 = você recebe lembrete todo dia 5</p>
               </div>
 
               <Button
@@ -426,7 +553,7 @@ export default function ClientesPage() {
 
       {/* Busca */}
       <div className="relative mb-6">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
         <Input
           placeholder="Buscar cliente..."
           className="pl-9"
@@ -437,73 +564,35 @@ export default function ClientesPage() {
 
       {/* Lista */}
       {loading ? (
-        <p className="text-zinc-400 text-sm">Carregando...</p>
-      ) : clientesFiltrados.length === 0 ? (
+        <p className="text-zinc-500 text-sm">Carregando...</p>
+      ) : clientesAtivos.length === 0 && clientesInativos.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-zinc-400">Nenhum cliente encontrado.</p>
-          <p className="text-zinc-300 text-sm mt-1">Clique em "Novo cliente" para cadastrar.</p>
+          <p className="text-zinc-500">Nenhum cliente encontrado.</p>
+          <p className="text-zinc-600 text-sm mt-1">Clique em &quot;Novo cliente&quot; para cadastrar.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {clientesFiltrados.map((c) => (
-            <Card key={c.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-base">{c.nome_empresa}</CardTitle>
-                  <Badge variant="outline" className="text-blue-700 border-blue-200 bg-blue-50 shrink-0">
-                    {c.plano} {c.plano === 1 ? 'tela' : 'telas'}
-                  </Badge>
-                </div>
-                <p className="text-sm text-zinc-500">{c.nome_responsavel}</p>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-zinc-600">
-                  <Phone className="w-3.5 h-3.5 text-zinc-400" />
-                  {c.whatsapp}
-                </div>
-                {c.locais?.length > 0 && (
-                  <div className="flex items-start gap-2">
-                    <Monitor className="w-3.5 h-3.5 text-zinc-400 mt-0.5 shrink-0" />
-                    <div className="flex flex-wrap gap-1">
-                      {c.locais.map((l) => (
-                        <span key={l} className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">
-                          {l}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {c.data_fim_contrato && (
-                  <div className="flex items-center gap-2 text-sm text-zinc-600">
-                    <CalendarDays className="w-3.5 h-3.5 text-zinc-400" />
-                    <span className="text-xs">
-                      Contrato até {format(parseISO(c.data_fim_contrato), 'dd/MM/yyyy')}
-                    </span>
-                  </div>
-                )}
-                <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-                  <p className="text-lg font-bold text-green-600">
-                    R$ {c.valor_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
-                  </p>
-                  <StatusContrato dataFim={c.data_fim_contrato} />
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <Link href={`/clientes/${c.id}`} className="flex-1">
-                    <Button size="sm" variant="outline" className="w-full text-xs h-8 text-blue-700 border-blue-200 hover:bg-blue-50">
-                      <User className="w-3 h-3 mr-1" /> Ver perfil
-                    </Button>
-                  </Link>
-                  <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => abrirEdicao(c)}>
-                    <Pencil className="w-3 h-3" />
-                  </Button>
-                  <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50 text-xs h-8" onClick={() => excluirCliente(c.id, c.nome_empresa)}>
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <>
+          {clientesAtivos.length === 0 ? (
+            <p className="text-zinc-500 text-sm py-4">Nenhum cliente ativo.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {clientesAtivos.map((c) => (
+                <ClienteCard key={c.id} c={c} onEditar={abrirEdicao} onDesativar={toggleAtivo} onExcluir={excluirCliente} />
+              ))}
+            </div>
+          )}
+
+          {mostrarInativos && clientesInativos.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">Inativos</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {clientesInativos.map((c) => (
+                  <ClienteCard key={c.id} c={c} inativo onEditar={abrirEdicao} onDesativar={toggleAtivo} onExcluir={excluirCliente} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )

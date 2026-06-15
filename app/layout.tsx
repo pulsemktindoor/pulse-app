@@ -26,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR">
-      <body className={`${inter.className} bg-zinc-50`}>
+    <html lang="pt-BR" className="dark">
+      <body className={inter.className}>
         <AppShell>{children}</AppShell>
         <Toaster richColors position="bottom-right" />
       </body>

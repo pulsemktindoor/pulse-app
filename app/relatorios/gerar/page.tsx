@@ -51,6 +51,27 @@ type DadosRelatorio = {
   mediaDiaria: number
 }
 
+function mesclarRelatorios(a: DadosRelatorio, b: DadosRelatorio): DadosRelatorio {
+  const telasMap = new Map<string, TelaDado>()
+  for (const tela of a.telasDados) telasMap.set(tela.nome, { ...tela, dailyValues: [...tela.dailyValues] })
+  for (const tela of b.telasDados) {
+    const existing = telasMap.get(tela.nome)
+    if (existing) {
+      existing.total += tela.total
+      existing.dailyValues = existing.dailyValues.map((v, i) => v + (tela.dailyValues[i] || 0))
+    } else {
+      telasMap.set(tela.nome, { ...tela, dailyValues: [...tela.dailyValues] })
+    }
+  }
+  const telasDados = [...telasMap.values()].sort(
+    (x, y) => (ORDEM_TELAS[x.nome] ?? 99) - (ORDEM_TELAS[y.nome] ?? 99)
+  )
+  const totaisDiarios = a.totaisDiarios.map((v, i) => v + (b.totaisDiarios[i] || 0))
+  const totalPeriodo = a.totalPeriodo + b.totalPeriodo
+  const mediaDiaria = a.nDias > 0 ? Math.round(totalPeriodo / a.nDias) : 0
+  return { ...a, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
+}
+
 async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
   const pdfjsLib = await import('pdfjs-dist')
 
@@ -238,20 +259,28 @@ function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number 
 export default function GerarRelatorioPage() {
   const [dados, setDados] = useState<DadosRelatorio | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingExtra, setLoadingExtra] = useState(false)
   const [erro, setErro] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [parceiros, setParceiros] = useState<{ id: string; nome_local: string }[]>([])
+  const [locaisLista, setLocaisLista] = useState<{ id: string; nome_local: string }[]>([])
   const [vinculo, setVinculo] = useState('')
   const [salvando, setSalvando] = useState(false)
+  const [pdfCount, setPdfCount] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const extraInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     Promise.all([
-      supabase.from('clientes').select('id, nome_empresa').order('nome_empresa'),
+      supabase.from('clientes').select('id, nome_empresa').eq('ativo', true).order('nome_empresa'),
       supabase.from('parceiros').select('id, nome_local').order('nome_local'),
-    ]).then(([{ data: cliData }, { data: parData }]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).from('locais').select('id, nome_local').eq('ativo', true).order('nome_local'),
+    ]).then(([{ data: cliData }, { data: parData }, { data: locData }]) => {
       if (cliData) setClientes(cliData as Cliente[])
       if (parData) setParceiros(parData)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (locData) setLocaisLista((locData as any[]).map((l: any) => ({ id: l.id, nome_local: l.nome_local })))
     })
   }, [])
 
@@ -261,9 +290,11 @@ export default function GerarRelatorioPage() {
     setLoading(true)
     setErro('')
     setDados(null)
+    setPdfCount(0)
     try {
       const resultado = await parsePdfCliente(file)
       setDados(resultado)
+      setPdfCount(1)
     } catch (err) {
       console.error('Erro ao processar PDF:', err)
       setErro('Erro: ' + (err instanceof Error ? err.message : String(err)))
@@ -271,20 +302,41 @@ export default function GerarRelatorioPage() {
     setLoading(false)
   }
 
+  async function handleUploadExtra(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !dados) return
+    setLoadingExtra(true)
+    setErro('')
+    try {
+      const resultado = await parsePdfCliente(file)
+      setDados(prev => prev ? mesclarRelatorios(prev, resultado) : resultado)
+      setPdfCount(prev => prev + 1)
+    } catch (err) {
+      console.error('Erro ao processar PDF extra:', err)
+      setErro('Erro no PDF extra: ' + (err instanceof Error ? err.message : String(err)))
+    }
+    setLoadingExtra(false)
+    if (extraInputRef.current) extraInputRef.current.value = ''
+  }
+
   async function salvarRelatorio() {
-    if (!vinculo) { toast.error('Selecione o cliente ou parceiro antes de salvar'); return }
+    if (!vinculo) { toast.error('Selecione o destino antes de salvar'); return }
     if (!dados) return
     setSalvando(true)
     const mesRef = format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd')
     const isParceiro = vinculo.startsWith('parceiro:')
+    const isLocal = vinculo.startsWith('local:')
     const parceiroId = isParceiro ? vinculo.replace('parceiro:', '') : null
-    const clienteId = isParceiro ? null : vinculo
+    const localId = isLocal ? vinculo.replace('local:', '') : null
+    const clienteId = (!isParceiro && !isLocal) ? vinculo : null
     const { error } = await supabase.from('relatorios').insert({
       cliente_id: clienteId,
       parceiro_id: parceiroId,
+      local_id: localId,
       mes_referencia: mesRef,
       total_exibicoes: dados.totalPeriodo,
       media_diaria: dados.mediaDiaria,
+      num_campanhas: pdfCount,
       enviado: false,
     })
     if (error) {
@@ -294,8 +346,6 @@ export default function GerarRelatorioPage() {
     }
     setSalvando(false)
   }
-
-  const isParceiro = vinculo.startsWith('parceiro:')
 
   const dadosGraficoCompleto = dados?.totaisDiarios.map((v, i) => ({
     dia: dados.datas[i] || `${i + 1}`,
@@ -309,7 +359,7 @@ export default function GerarRelatorioPage() {
     <>
       <div className="p-8 print:hidden">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-zinc-900">Gerar relatório</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">Gerar relatório</h1>
           <p className="text-zinc-500 text-sm mt-1">
             Faça upload do PDF do app e gere um relatório bonito para o cliente
           </p>
@@ -317,10 +367,10 @@ export default function GerarRelatorioPage() {
 
         <div
           onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-zinc-300 rounded-2xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-blue-50 transition-colors"
+          className="border-2 border-dashed border-white/[0.15] rounded-2xl p-12 text-center cursor-pointer hover:border-purple-400 hover:bg-blue-500/[0.06] transition-colors"
         >
           <Upload className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
-          <p className="font-medium text-zinc-700">Clique para selecionar o PDF</p>
+          <p className="font-medium text-zinc-300">Clique para selecionar o PDF</p>
           <p className="text-sm text-zinc-400 mt-1">Relatório exportado pelo app de marketing indoor</p>
           <input ref={inputRef} type="file" accept=".pdf" className="hidden" onChange={handleUpload} />
         </div>
@@ -331,40 +381,58 @@ export default function GerarRelatorioPage() {
         {dados && (
           <div className="mt-6 space-y-4">
             {/* Status + imprimir */}
-            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-              <div className="flex items-center gap-2 text-green-700">
+            <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 text-green-400">
                 <FileText className="w-4 h-4" />
-                <span className="text-sm font-medium">PDF lido — {dados.cliente}</span>
-                <span className="text-xs text-green-600 opacity-70">
+                <span className="text-sm font-medium">
+                  {pdfCount > 1 ? `${pdfCount} PDFs mesclados` : 'PDF lido'} — {dados.cliente}
+                </span>
+                <span className="text-xs text-green-400 opacity-70">
                   · {dados.telasDados.length} tela(s) · {dados.nDias} dias
+                  {pdfCount > 1 && ` · ${pdfCount} campanhas`}
                 </span>
               </div>
-              <Button
-                onClick={() => {
-                  if (!dados) return
-                  const titulo = document.title
-                  document.title = `Pulse - ${dados.cliente} - ${dados.dataGeracao.replace(/\//g, '-')}`
-                  window.onafterprint = () => { document.title = titulo }
-                  window.print()
-                }}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Printer className="w-4 h-4 mr-2" />
-                Imprimir / Baixar PDF
-              </Button>
+              <div className="flex items-center gap-2">
+                {pdfCount < 4 && (
+                  <>
+                    <Button
+                      onClick={() => extraInputRef.current?.click()}
+                      disabled={loadingExtra}
+                      variant="outline"
+                      className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {loadingExtra ? 'Lendo...' : `Adicionar ${pdfCount + 1}º PDF`}
+                    </Button>
+                    <input ref={extraInputRef} type="file" accept=".pdf" className="hidden" onChange={handleUploadExtra} />
+                  </>
+                )}
+                <Button
+                  onClick={() => {
+                    if (!dados) return
+                    const titulo = document.title
+                    document.title = `Pulse - ${dados.cliente} - ${dados.dataGeracao.replace(/\//g, '-')}`
+                    window.onafterprint = () => { document.title = titulo }
+                    window.print()
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  Imprimir / Baixar PDF
+                </Button>
+              </div>
             </div>
 
             {/* Vincular + salvar */}
-            <div className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-4 space-y-3">
+            <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl px-4 py-4 space-y-3">
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Vincular este relatório a</Label>
                   <Select onValueChange={(v) => setVinculo(v as string)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecione o cliente ou local parceiro" />
+                      <SelectValue placeholder="Selecione o destino do relatório" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Clientes pagantes */}
                       {clientes.length > 0 && (
                         <>
                           <div className="px-2 py-1.5 text-xs font-semibold text-zinc-400 uppercase tracking-wide">
@@ -375,14 +443,23 @@ export default function GerarRelatorioPage() {
                           ))}
                         </>
                       )}
-                      {/* Locais parceiros */}
                       {parceiros.length > 0 && (
                         <>
-                          <div className="px-2 py-1.5 mt-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide border-t border-zinc-100">
-                            Locais parceiros
+                          <div className="px-2 py-1.5 mt-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide border-t border-white/[0.08]">
+                            Parceiros
                           </div>
                           {parceiros.map(p => (
                             <SelectItem key={p.id} value={`parceiro:${p.id}`}>{p.nome_local}</SelectItem>
+                          ))}
+                        </>
+                      )}
+                      {locaisLista.length > 0 && (
+                        <>
+                          <div className="px-2 py-1.5 mt-1 text-xs font-semibold text-zinc-400 uppercase tracking-wide border-t border-white/[0.08]">
+                            Locais
+                          </div>
+                          {locaisLista.map(l => (
+                            <SelectItem key={l.id} value={`local:${l.id}`}>{l.nome_local}</SelectItem>
                           ))}
                         </>
                       )}
