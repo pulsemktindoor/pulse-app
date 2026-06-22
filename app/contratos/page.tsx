@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select'
 import {
   Plus, Search, FileText, Download, Send, CheckCircle2,
-  Trash2, Building2, Pencil, Undo2, Printer,
+  Trash2, Building2, Pencil, Undo2, Printer, Monitor, X,
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -97,6 +97,16 @@ export default function ContratosPage() {
   const [modeloBrancoOpen, setModeloBrancoOpen] = useState(false)
   const [modeloBrancoTipo, setModeloBrancoTipo] = useState<ContratoTipo>('anuncio')
   const [modeloBrancoDuracao, setModeloBrancoDuracao] = useState(12)
+  const [pdfEditando, setPdfEditando] = useState<Contrato | null>(null)
+  const [telasPdfEditadas, setTelasPdfEditadas] = useState<{ nome: string; visualizacoes?: number }[]>([])
+  const [editandoTelaIdx, setEditandoTelaIdx] = useState<number | null>(null)
+
+  function abrirPdfDialog(c: Contrato) {
+    const sorted = [...new Set(c.locais_selecionados || [])].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    setTelasPdfEditadas(sorted.map((nome) => ({ nome })))
+    setEditandoTelaIdx(null)
+    setPdfEditando(c)
+  }
   const [editForm, setEditForm] = useState<EditForm>({
     tipo: 'anuncio', nome_empresa: '', cnpj_cpf: '', endereco: '', numero: '',
     bairro: '', complemento: '', cidade: 'Blumenau', uf: 'SC', cep: '', contato: '',
@@ -323,18 +333,11 @@ export default function ContratosPage() {
                       <Pencil className="w-3 h-3" />
                     </Button>
                     {/* PDF */}
-                    <PDFDownloadLink
-                      document={<ContratoPDF contrato={c} logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''} />}
-                      fileName={`contrato-${c.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(c.data_inicio), 'yyyy-MM')}-${format(new Date(), 'ddMMyy-HHmm')}.pdf`}
-                    >
-                      {({ loading: pdfLoading }: { loading: boolean }) => (
-                        <Button size="sm" variant="outline"
-                          className="text-xs h-7 px-2 text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
-                          disabled={pdfLoading} title="Baixar PDF">
-                          <Download className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </PDFDownloadLink>
+                    <Button size="sm" variant="outline"
+                      className="text-xs h-7 px-2 text-blue-400 border-blue-500/30 hover:bg-blue-500/10"
+                      onClick={() => abrirPdfDialog(c)} title="Baixar PDF">
+                      <Download className="w-3 h-3" />
+                    </Button>
                     {/* Excluir */}
                     <Button size="sm" variant="outline"
                       className="text-xs h-7 px-2 text-red-400 border-red-500/30 hover:bg-red-500/10"
@@ -348,6 +351,99 @@ export default function ContratosPage() {
           ))}
         </div>
       )}
+
+      {/* ── DIALOG PDF ── */}
+      <Dialog open={!!pdfEditando} onOpenChange={(open) => !open && setPdfEditando(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">Baixar PDF — {pdfEditando?.nome_empresa}</DialogTitle>
+          </DialogHeader>
+          {pdfEditando && (
+            <div className="space-y-4 mt-1">
+              {telasPdfEditadas.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-zinc-400 mb-2 flex items-center gap-1.5">
+                    <Monitor className="w-3.5 h-3.5 text-blue-400" />
+                    Telas no PDF
+                    <span className="text-zinc-600 font-normal">(edite antes de baixar)</span>
+                  </p>
+                  <div className="space-y-1.5">
+                    {telasPdfEditadas.map((tela, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-white/[0.04] rounded-lg px-3 py-2">
+                        {editandoTelaIdx === idx ? (
+                          <Input
+                            autoFocus
+                            value={tela.nome}
+                            onChange={(e) =>
+                              setTelasPdfEditadas((prev) =>
+                                prev.map((t, i) => (i === idx ? { ...t, nome: e.target.value } : t))
+                              )
+                            }
+                            onBlur={() => setEditandoTelaIdx(null)}
+                            onKeyDown={(e) => e.key === 'Enter' && setEditandoTelaIdx(null)}
+                            className="h-7 text-sm flex-1"
+                          />
+                        ) : (
+                          <span className="text-sm text-zinc-200 flex-1 truncate">{tela.nome}</span>
+                        )}
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="viz./dia"
+                          value={tela.visualizacoes ?? ''}
+                          onChange={(e) =>
+                            setTelasPdfEditadas((prev) =>
+                              prev.map((t, i) =>
+                                i === idx
+                                  ? { ...t, visualizacoes: e.target.value ? parseInt(e.target.value) : undefined }
+                                  : t
+                              )
+                            )
+                          }
+                          className="h-7 text-xs w-24 shrink-0"
+                        />
+                        <button
+                          onClick={() => setEditandoTelaIdx(editandoTelaIdx === idx ? null : idx)}
+                          className="p-1.5 rounded hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
+                          title="Renomear"
+                        >
+                          {editandoTelaIdx === idx ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          onClick={() => setTelasPdfEditadas((prev) => prev.filter((_, i) => i !== idx))}
+                          className="p-1.5 rounded hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition-colors shrink-0"
+                          title="Remover do PDF"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <PDFDownloadLink
+                document={<ContratoPDF
+                  contrato={{ ...pdfEditando, locais_selecionados: telasPdfEditadas.map((t) => t.nome) }}
+                  logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''}
+                  telasInfo={telasPdfEditadas}
+                />}
+                fileName={`contrato-${pdfEditando.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(pdfEditando.data_inicio), 'yyyy-MM')}-${format(new Date(), 'ddMMyy-HHmm')}.pdf`}
+              >
+                {({ loading: pdfLoading }: { loading: boolean }) => (
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={pdfLoading}
+                    onClick={() => setPdfEditando(null)}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {pdfLoading ? 'Gerando PDF...' : 'Baixar PDF'}
+                  </Button>
+                )}
+              </PDFDownloadLink>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ── DIALOG MODELO EM BRANCO ── */}
       <Dialog open={modeloBrancoOpen} onOpenChange={setModeloBrancoOpen}>
