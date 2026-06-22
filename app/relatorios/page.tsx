@@ -13,6 +13,7 @@ type RelatorioComVinculo = {
   id: string
   cliente_id: string | null
   parceiro_id: string | null
+  local_id: string | null
   mes_referencia: string
   total_exibicoes: number | null
   media_diaria: number | null
@@ -21,6 +22,7 @@ type RelatorioComVinculo = {
   num_campanhas: number
   clientes: { nome_empresa: string; nome_responsavel: string; whatsapp: string } | null
   parceiros: { nome_local: string; nome_responsavel: string; whatsapp: string } | null
+  locais: { nome_local: string; nome_responsavel: string | null; whatsapp: string | null } | null
 }
 
 export default function RelatoriosPage() {
@@ -30,24 +32,24 @@ export default function RelatoriosPage() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const { data } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase as any)
       .from('relatorios')
-      .select('*, clientes(nome_empresa, nome_responsavel, whatsapp), parceiros(nome_local, nome_responsavel, whatsapp)')
+      .select('*, clientes(nome_empresa, nome_responsavel, whatsapp), parceiros(nome_local, nome_responsavel, whatsapp), locais(nome_local, nome_responsavel, whatsapp)')
       .order('mes_referencia', { ascending: false })
     if (data) setRelatorios(data as RelatorioComVinculo[])
     setLoading(false)
   }
 
   function getNome(r: RelatorioComVinculo) {
-    return r.clientes?.nome_empresa || r.parceiros?.nome_local || '—'
+    return r.clientes?.nome_empresa || r.parceiros?.nome_local || r.locais?.nome_local || '—'
   }
 
   function getContato(r: RelatorioComVinculo) {
-    return r.clientes
-      ? { whatsapp: r.clientes.whatsapp, nome: r.clientes.nome_responsavel }
-      : r.parceiros
-      ? { whatsapp: r.parceiros.whatsapp, nome: r.parceiros.nome_responsavel }
-      : null
+    if (r.clientes) return { whatsapp: r.clientes.whatsapp, nome: r.clientes.nome_responsavel }
+    if (r.parceiros) return { whatsapp: r.parceiros.whatsapp, nome: r.parceiros.nome_responsavel }
+    if (r.locais?.whatsapp) return { whatsapp: r.locais.whatsapp, nome: r.locais.nome_responsavel || r.locais.nome_local }
+    return null
   }
 
   function saudacao() {
