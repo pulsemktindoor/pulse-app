@@ -416,15 +416,21 @@ function fmtDuracao(m: number) {
   return por ? `${m} (${por}) meses` : `${m} meses`
 }
 
+interface TelaInfo {
+  nome: string
+  visualizacoes?: number
+}
+
 interface Props {
   contrato: Contrato
   logoUrl?: string
   semDados?: boolean
+  telasInfo?: TelaInfo[]
 }
 
 const B = (n = 28) => '_'.repeat(n)
 
-export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
+export function ContratoPDF({ contrato, logoUrl, semDados, telasInfo }: Props) {
   const ano = new Date(contrato.created_at).getFullYear()
   const numContrato = contrato.numero_contrato
     ? `Nº ${String(contrato.numero_contrato).padStart(4, '0')}/${ano}`
@@ -747,24 +753,34 @@ export function ContratoPDF({ contrato, logoUrl, semDados }: Props) {
 
               <View style={s.clausula}>
                 <Text style={s.clausulaTitulo}>2. CLÁUSULA SEGUNDA – DAS TELAS DE VEICULAÇÃO</Text>
-                {contrato.locais_selecionados?.length > 0 ? (
-                  <>
-                    <Text style={[s.clausulaTexto, { marginBottom: 5 }]}>
-                      2.1  As campanhas serão veiculadas nas seguintes telas estrategicamente posicionadas:
+                {(() => {
+                  const telas: TelaInfo[] = telasInfo && telasInfo.length > 0
+                    ? telasInfo
+                    : (contrato.locais_selecionados?.length > 0
+                        ? [...new Set(contrato.locais_selecionados)].sort((a, b) => a.localeCompare(b, 'pt-BR')).map((nome) => ({ nome }))
+                        : [])
+                  return telas.length > 0 ? (
+                    <>
+                      <Text style={[s.clausulaTexto, { marginBottom: 5 }]}>
+                        2.1  As campanhas serão veiculadas nas seguintes telas estrategicamente posicionadas:
+                      </Text>
+                      <View style={s.telasWrap}>
+                        {telas.map((tela, i) => (
+                          <View key={i} style={s.telaChip}>
+                            <Text style={s.telaChipText}>
+                              {tela.nome.replace(/\s*\(.*?\)/g, '').trim()}
+                              {tela.visualizacoes != null ? ` · ${tela.visualizacoes}×/dia` : ''}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    </>
+                  ) : (
+                    <Text style={s.clausulaTexto}>
+                      2.1  As campanhas serão veiculadas nas telas da PULSE MARKETING INDOOR definidas em comum acordo entre as partes.
                     </Text>
-                    <View style={s.telasWrap}>
-                      {[...new Set(contrato.locais_selecionados)].sort((a, b) => a.localeCompare(b, 'pt-BR')).map((local, i) => (
-                        <View key={i} style={s.telaChip}>
-                          <Text style={s.telaChipText}>{local.replace(/\s*\(.*?\)/g, '').trim()}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </>
-                ) : (
-                  <Text style={s.clausulaTexto}>
-                    2.1  As campanhas serão veiculadas nas telas da PULSE MARKETING INDOOR definidas em comum acordo entre as partes.
-                  </Text>
-                )}
+                  )
+                })()}
               </View>
 
               <View style={s.clausula}>

@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, ArrowRight, Check, Download, FileText, Monitor, CalendarDays, DollarSign } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Download, FileText, Monitor, CalendarDays, DollarSign, Pencil, Trash2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { format, addMonths, parseISO } from 'date-fns'
@@ -83,6 +83,8 @@ export default function NovoContratoPage() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [salvando, setSalvando] = useState(false)
   const [contratoSalvo, setContratoSalvo] = useState<Contrato | null>(null)
+  const [telasEditadas, setTelasEditadas] = useState<{ nome: string; visualizacoes?: number }[]>([])
+  const [editandoTelaIdx, setEditandoTelaIdx] = useState<number | null>(null)
 
   useEffect(() => {
     supabase.from('clientes').select('*').eq('ativo', true).order('nome_empresa').then(({ data }) => {
@@ -212,7 +214,10 @@ export default function NovoContratoPage() {
       setSalvando(false)
       return
     }
-    setContratoSalvo({ ...(data as Contrato), exclusivo: form.exclusivo, ramo_exclusividade: form.ramo_exclusividade || null })
+    const salvo = { ...(data as Contrato), exclusivo: form.exclusivo, ramo_exclusividade: form.ramo_exclusividade || null }
+    setContratoSalvo(salvo)
+    const sorted = [...new Set(form.locais_selecionados)].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    setTelasEditadas(sorted.map((nome) => ({ nome })))
     setEtapa(3)
     setSalvando(false)
   }
@@ -647,8 +652,75 @@ export default function NovoContratoPage() {
             </CardContent>
           </Card>
 
+          {/* Editar telas do PDF */}
+          {telasEditadas.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-zinc-300 mb-2 flex items-center gap-2">
+                <Monitor className="w-4 h-4 text-blue-400" />
+                Telas no PDF
+                <span className="text-xs text-zinc-500 font-normal">(edite antes de baixar)</span>
+              </p>
+              <div className="space-y-1.5">
+                {telasEditadas.map((tela, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-white/[0.04] rounded-lg px-3 py-2">
+                    {editandoTelaIdx === idx ? (
+                      <Input
+                        autoFocus
+                        value={tela.nome}
+                        onChange={(e) =>
+                          setTelasEditadas((prev) =>
+                            prev.map((t, i) => (i === idx ? { ...t, nome: e.target.value } : t))
+                          )
+                        }
+                        onBlur={() => setEditandoTelaIdx(null)}
+                        onKeyDown={(e) => e.key === 'Enter' && setEditandoTelaIdx(null)}
+                        className="h-7 text-sm flex-1"
+                      />
+                    ) : (
+                      <span className="text-sm text-zinc-200 flex-1 truncate">{tela.nome}</span>
+                    )}
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="viz./dia"
+                      value={tela.visualizacoes ?? ''}
+                      onChange={(e) =>
+                        setTelasEditadas((prev) =>
+                          prev.map((t, i) =>
+                            i === idx
+                              ? { ...t, visualizacoes: e.target.value ? parseInt(e.target.value) : undefined }
+                              : t
+                          )
+                        )
+                      }
+                      className="h-7 text-xs w-24 shrink-0"
+                    />
+                    <button
+                      onClick={() => setEditandoTelaIdx(editandoTelaIdx === idx ? null : idx)}
+                      className="p-1.5 rounded hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
+                      title="Renomear"
+                    >
+                      {editandoTelaIdx === idx ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+                    </button>
+                    <button
+                      onClick={() => setTelasEditadas((prev) => prev.filter((_, i) => i !== idx))}
+                      className="p-1.5 rounded hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition-colors shrink-0"
+                      title="Remover do PDF"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <PDFDownloadLink
-            document={<ContratoPDF contrato={contratoSalvo} logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''} />}
+            document={<ContratoPDF
+              contrato={{ ...contratoSalvo, locais_selecionados: telasEditadas.map((t) => t.nome) }}
+              logoUrl={typeof window !== 'undefined' ? window.location.origin + '/pulse-logo.png' : ''}
+              telasInfo={telasEditadas}
+            />}
             fileName={`contrato-${contratoSalvo.nome_empresa.replace(/\s+/g, '-').toLowerCase()}-${format(parseISO(contratoSalvo.data_inicio), 'yyyy-MM')}-${format(new Date(), 'ddMMyy-HHmm')}.pdf`}
           >
             {({ loading: pdfLoading }: { loading: boolean }) => (
