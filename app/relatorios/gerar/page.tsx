@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Cliente } from '@/lib/supabase/types'
 import { Button } from '@/components/ui/button'
-import { Upload, FileText, Printer, Monitor, Save } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Upload, FileText, Printer, Monitor, Save, Pencil, Trash2, X } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -267,8 +268,29 @@ export default function GerarRelatorioPage() {
   const [vinculo, setVinculo] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [pdfCount, setPdfCount] = useState(0)
+  const [editandoTelaIdx, setEditandoTelaIdx] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const extraInputRef = useRef<HTMLInputElement>(null)
+
+  function renomearTela(idx: number, novoNome: string) {
+    setDados(prev => {
+      if (!prev) return prev
+      return { ...prev, telasDados: prev.telasDados.map((t, i) => i === idx ? { ...t, nome: novoNome } : t) }
+    })
+  }
+
+  function removerTela(idx: number) {
+    setDados(prev => {
+      if (!prev) return prev
+      const telasDados = prev.telasDados.filter((_, i) => i !== idx)
+      const totalPeriodo = telasDados.reduce((a, t) => a + t.total, 0)
+      const mediaDiaria = prev.nDias > 0 ? Math.round(totalPeriodo / prev.nDias) : 0
+      const totaisDiarios = prev.totaisDiarios.map((_, di) =>
+        telasDados.reduce((a, t) => a + (t.dailyValues[di] || 0), 0)
+      )
+      return { ...prev, telasDados, totalPeriodo, mediaDiaria, totaisDiarios }
+    })
+  }
 
   useEffect(() => {
     Promise.all([
@@ -421,6 +443,63 @@ export default function GerarRelatorioPage() {
                   Imprimir / Baixar PDF
                 </Button>
               </div>
+            </div>
+
+            {/* Editar dados */}
+            <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl px-4 py-4 space-y-4">
+              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Editar dados do relatório</p>
+
+              {/* Nome do cliente */}
+              <div className="space-y-1">
+                <Label className="text-xs">Nome exibido no relatório</Label>
+                <Input
+                  value={dados.cliente}
+                  onChange={(e) => setDados(prev => prev ? { ...prev, cliente: e.target.value } : prev)}
+                  className="h-8 text-sm"
+                />
+              </div>
+
+              {/* Telas */}
+              {dados.telasDados.length > 0 && (
+                <div>
+                  <Label className="text-xs mb-2 block">Telas ({dados.telasDados.length})</Label>
+                  <div className="space-y-1.5">
+                    {dados.telasDados.map((tela, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-white/[0.04] rounded-lg px-3 py-2">
+                        {editandoTelaIdx === idx ? (
+                          <Input
+                            autoFocus
+                            value={tela.nome}
+                            onChange={(e) => renomearTela(idx, e.target.value)}
+                            onBlur={() => setEditandoTelaIdx(null)}
+                            onKeyDown={(e) => e.key === 'Enter' && setEditandoTelaIdx(null)}
+                            className="h-7 text-sm flex-1"
+                          />
+                        ) : (
+                          <span className="text-sm text-zinc-200 flex-1 truncate">{tela.nome}</span>
+                        )}
+                        <span className="text-xs text-zinc-500 shrink-0 w-16 text-right">
+                          {tela.total.toLocaleString('pt-BR')}
+                        </span>
+                        <button
+                          onClick={() => setEditandoTelaIdx(editandoTelaIdx === idx ? null : idx)}
+                          className="p-1.5 rounded hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
+                          title="Renomear"
+                        >
+                          {editandoTelaIdx === idx ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          onClick={() => removerTela(idx)}
+                          className="p-1.5 rounded hover:bg-red-500/20 text-zinc-500 hover:text-red-400 transition-colors shrink-0"
+                          title="Remover tela"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Vincular + salvar */}
