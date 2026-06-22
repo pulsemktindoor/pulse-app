@@ -279,6 +279,16 @@ export default function GerarRelatorioPage() {
     })
   }
 
+  function editarExibicoes(idx: number, novoTotal: number) {
+    setDados(prev => {
+      if (!prev) return prev
+      const telasDados = prev.telasDados.map((t, i) => i === idx ? { ...t, total: novoTotal } : t)
+      const totalPeriodo = telasDados.reduce((a, t) => a + t.total, 0)
+      const mediaDiaria = prev.nDias > 0 ? Math.round(totalPeriodo / prev.nDias) : 0
+      return { ...prev, telasDados, totalPeriodo, mediaDiaria }
+    })
+  }
+
   function removerTela(idx: number) {
     setDados(prev => {
       if (!prev) return prev
@@ -478,9 +488,14 @@ export default function GerarRelatorioPage() {
                         ) : (
                           <span className="text-sm text-zinc-200 flex-1 truncate">{tela.nome}</span>
                         )}
-                        <span className="text-xs text-zinc-500 shrink-0 w-16 text-right">
-                          {tela.total.toLocaleString('pt-BR')}
-                        </span>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={tela.total}
+                          onChange={(e) => editarExibicoes(idx, parseInt(e.target.value) || 0)}
+                          className="h-7 text-xs w-24 shrink-0 text-right"
+                          title="Exibições"
+                        />
                         <button
                           onClick={() => setEditandoTelaIdx(editandoTelaIdx === idx ? null : idx)}
                           className="p-1.5 rounded hover:bg-white/[0.08] text-zinc-500 hover:text-zinc-300 transition-colors shrink-0"
