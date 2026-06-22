@@ -156,9 +156,8 @@ export default function ClientesPage() {
       if (data) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const nomes = (data as any[]).map((t) => t.nome as string)
-        const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/gi, '')
         const seen = new Set<string>()
-        setLocaisDisponiveis(nomes.filter(n => { const k = norm(n); return seen.has(k) ? false : !!seen.add(k) }))
+        setLocaisDisponiveis(nomes.filter(n => { const k = normalizarNome(n); return seen.has(k) ? false : !!seen.add(k) }))
       }
     })
   }, [])
@@ -236,7 +235,7 @@ export default function ClientesPage() {
   }
 
   function normalizarNome(s: string) {
-    return s.toLowerCase().replace(/[^a-z0-9]/gi, '')
+    return s.replace(/\s*\(.*?\)/g, '').toLowerCase().replace(/[^a-z0-9]/gi, '')
   }
 
   function abrirEdicao(c: Cliente) {

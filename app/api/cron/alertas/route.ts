@@ -45,7 +45,7 @@ export async function GET(req: Request) {
         const dias = differenceInDays(parseISO(c.data_fim), hoje)
         return dias === 0
           ? `🔴 ${c.nome_empresa} — vence HOJE`
-          : `🟠 ${c.nome_empresa} — vence AMANHA`
+          : `🟠 ${c.nome_empresa} — vence AMANHÃ`
       })
       secoes.push(`⚠️ <b>CONTRATOS</b>\n${linhas.join('\n')}`)
     }
@@ -73,7 +73,7 @@ export async function GET(req: Request) {
   if (relHoje.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const linhas = relHoje.map((r: any) => `• ${r.nome_local}`)
-    secoes.push(`📋 <b>RELATORIOS — ENVIAR HOJE</b>\n${linhas.join('\n')}`)
+    secoes.push(`📋 <b>RELATÓRIOS — ENVIAR HOJE</b>\n${linhas.join('\n')}`)
   }
 
   // 3. Relatórios gerados e não enviados
@@ -83,7 +83,7 @@ export async function GET(req: Request) {
     .eq('enviado', false)
 
   if (pendentes && pendentes.length > 0) {
-    secoes.push(`📬 <b>${pendentes.length} relatorio(s) aguardando envio</b>`)
+    secoes.push(`⚠️ <b>${pendentes.length} relatório(s) atrasado(s)</b>`)
   }
 
   if (secoes.length === 0) {
