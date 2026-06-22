@@ -20,7 +20,6 @@ async function sendTelegram(message: string) {
 }
 
 export async function GET(req: Request) {
-  // Verifica se é chamada legítima do Vercel Cron
   const authHeader = req.headers.get('authorization')
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,91 +27,80 @@ export async function GET(req: Request) {
 
   const hoje = startOfDay(new Date())
   const diaHoje = hoje.getDate()
-  const alertas: string[] = []
+  const secoes: string[] = []
 
-  // 1. Contratos expirando (clientes)
+  // 1. Contratos vencendo HOJE ou AMANHÃ
   const { data: contratos } = await supabase
     .from('contratos')
     .select('nome_empresa, data_fim, status')
     .neq('status', 'encerrado')
 
   if (contratos) {
-    const expirando = contratos.filter((c) => {
+    const urgentes = contratos.filter((c) => {
       const dias = differenceInDays(parseISO(c.data_fim), hoje)
-      return dias >= 0 && dias <= 30
+      return dias === 0 || dias === 1
     })
-    if (expirando.length > 0) {
-      alertas.push(`⚠️ <b>Contratos expirando em breve:</b>`)
-      for (const c of expirando) {
+    if (urgentes.length > 0) {
+      const linhas = urgentes.map((c) => {
         const dias = differenceInDays(parseISO(c.data_fim), hoje)
-        const dataFmt = format(parseISO(c.data_fim), 'dd/MM/yyyy')
-        alertas.push(
-          dias === 0
-            ? `  • ${c.nome_empresa} — <b>vence HOJE</b>`
-            : dias <= 7
-            ? `  • ${c.nome_empresa} — vence em <b>${dias} dias</b> (${dataFmt})`
-            : `  • ${c.nome_empresa} — vence em ${dias} dias (${dataFmt})`
-        )
-      }
+        return dias === 0
+          ? `🔴 ${c.nome_empresa} — vence HOJE`
+          : `🟠 ${c.nome_empresa} — vence AMANHA`
+      })
+      secoes.push(`⚠️ <b>CONTRATOS</b>\n${linhas.join('\n')}`)
     }
   }
 
-  // 2. Relatórios de locais para enviar hoje
+  // 2. Relatórios para enviar hoje (locais + parceiros)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: locais } = await (supabase as any)
     .from('locais')
-    .select('nome_local, dia_envio_relatorio, nome_responsavel')
+    .select('nome_local, nome_responsavel')
     .eq('ativo', true)
     .eq('dia_envio_relatorio', diaHoje)
 
-  if (locais && locais.length > 0) {
-    alertas.push(`\n📊 <b>Relatórios para enviar hoje (dia ${diaHoje}):</b>`)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const l of locais as any[]) {
-      alertas.push(`  • ${l.nome_local}${l.nome_responsavel ? ` (${l.nome_responsavel})` : ''}`)
-    }
-  }
-
-  // 3. Relatórios de parceiros para enviar hoje
   const { data: parceiros } = await supabase
     .from('parceiros')
-    .select('nome_local, dia_envio_relatorio, nome_responsavel')
+    .select('nome_local, nome_responsavel')
     .eq('dia_envio_relatorio', diaHoje)
 
-  if (parceiros && parceiros.length > 0) {
-    if (!locais || locais.length === 0) {
-      alertas.push(`\n📊 <b>Relatórios para enviar hoje (dia ${diaHoje}):</b>`)
-    }
-    for (const p of parceiros) {
-      alertas.push(`  • ${p.nome_local}${p.nome_responsavel ? ` (${p.nome_responsavel})` : ''}`)
-    }
+  const relHoje = [
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...((locais as any[]) || []),
+    ...(parceiros || []),
+  ]
+
+  if (relHoje.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const linhas = relHoje.map((r: any) => `• ${r.nome_local}`)
+    secoes.push(`📋 <b>RELATORIOS — ENVIAR HOJE</b>\n${linhas.join('\n')}`)
   }
 
-  // 4. Clientes com relatórios pendentes de envio
-  const { data: relatoriosPendentes } = await supabase
+  // 3. Relatórios gerados e não enviados
+  const { data: pendentes } = await supabase
     .from('relatorios')
-    .select('mes_referencia')
+    .select('id')
     .eq('enviado', false)
 
-  if (relatoriosPendentes && relatoriosPendentes.length > 0) {
-    alertas.push(`\n📬 <b>${relatoriosPendentes.length} relatório(s) gerado(s) e não enviado(s)</b>`)
+  if (pendentes && pendentes.length > 0) {
+    secoes.push(`📬 <b>${pendentes.length} relatorio(s) aguardando envio</b>`)
   }
 
-  if (alertas.length === 0) {
-    // Nada urgente hoje, não manda mensagem
+  if (secoes.length === 0) {
     return NextResponse.json({ ok: true, message: 'Sem alertas hoje' })
   }
 
   const dataFormatada = format(hoje, "EEEE, dd 'de' MMMM", { locale: ptBR })
+  const dataLabel = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1)
+
   const mensagem = [
-    `🔔 <b>Pulse — Alertas do dia</b>`,
-    `📅 ${dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1)}`,
+    `🔔 <b>Pulse • Alertas de hoje</b>`,
+    `📅 ${dataLabel}`,
     ``,
-    ...alertas,
-    ``,
-    `<i>Acesse pulse-app-snowy-five.vercel.app para mais detalhes.</i>`,
+    `━━━━━━━━━━━━━━━━━━`,
+    secoes.join('\n\n━━━━━━━━━━━━━━━━━━\n'),
   ].join('\n')
 
   await sendTelegram(mensagem)
-  return NextResponse.json({ ok: true, alertas: alertas.length })
+  return NextResponse.json({ ok: true, alertas: secoes.length })
 }
