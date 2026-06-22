@@ -269,8 +269,55 @@ export default function GerarRelatorioPage() {
   const [salvando, setSalvando] = useState(false)
   const [pdfCount, setPdfCount] = useState(0)
   const [editandoTelaIdx, setEditandoTelaIdx] = useState<number | null>(null)
+  const [mapeamentoAplicado, setMapeamentoAplicado] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const extraInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleVinculoChange(value: string) {
+    setVinculo(value)
+    setMapeamentoAplicado(false)
+
+    if (!value.startsWith('local:') || !dados) return
+    const localId = value.replace('local:', '')
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: telasLocal } = await (supabase as any)
+      .from('telas')
+      .select('nome, identificacao')
+      .eq('local_id', localId)
+      .eq('ativo', true)
+
+    if (!telasLocal || telasLocal.length === 0) return
+
+    // Mapeamento: identificacao (nome interno/PDF) → nome (exibição no relatório)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mapa = new Map<string, string>(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (telasLocal as any[])
+        .filter((t: any) => t.identificacao)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((t: any) => [t.identificacao.toLowerCase(), t.nome])
+    )
+
+    if (mapa.size === 0) return
+
+    setDados(prev => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        telasDados: prev.telasDados.map(tela => {
+          const nomeLower = tela.nome.toLowerCase()
+          for (const [identificacao, nomeDisplay] of mapa) {
+            if (nomeLower.includes(identificacao)) {
+              return { ...tela, nome: nomeDisplay }
+            }
+          }
+          return tela
+        }),
+      }
+    })
+    setMapeamentoAplicado(true)
+  }
 
   function renomearTela(idx: number, novoNome: string) {
     setDados(prev => {
@@ -472,7 +519,12 @@ export default function GerarRelatorioPage() {
               {/* Telas */}
               {dados.telasDados.length > 0 && (
                 <div>
-                  <Label className="text-xs mb-2 block">Telas ({dados.telasDados.length})</Label>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-xs">Telas ({dados.telasDados.length})</Label>
+                    {mapeamentoAplicado && (
+                      <span className="text-[11px] text-green-400">✓ Nomes aplicados do cadastro</span>
+                    )}
+                  </div>
                   <div className="space-y-1.5">
                     {dados.telasDados.map((tela, idx) => (
                       <div key={idx} className="flex items-center gap-2 bg-white/[0.04] rounded-lg px-3 py-2">
@@ -522,7 +574,7 @@ export default function GerarRelatorioPage() {
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Vincular este relatório a</Label>
-                  <Select onValueChange={(v) => setVinculo(v as string)}>
+                  <Select onValueChange={handleVinculoChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o destino do relatório" />
                     </SelectTrigger>
