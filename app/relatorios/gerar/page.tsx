@@ -127,12 +127,34 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
 
   if (nDias > 0) {
     // Formato diário: "18 de nov", "1 de dez", etc.
-    datas = dateMatches.map(m => {
+    // PDFs com múltiplas páginas repetem o cabeçalho de datas em cada página.
+    // Identifica o maior grupo (run) de datas únicas e consecutivas = cabeçalho real.
+    // Isso evita que o parser só leia a última página e ignore as demais.
+    const runs: { start: number; len: number }[] = []
+    let runStart = 0
+    const runDates = new Set<string>()
+    for (let i = 0; i < dateMatches.length; i++) {
+      const norm = dateMatches[i][0].replace(/\s+/g, ' ').toLowerCase().trim()
+      if (runDates.has(norm)) {
+        runs.push({ start: runStart, len: i - runStart })
+        runStart = i
+        runDates.clear()
+      }
+      runDates.add(norm)
+    }
+    runs.push({ start: runStart, len: dateMatches.length - runStart })
+    // Usa o maior run (em caso de empate, o primeiro = página 1)
+    const bestRun = runs.reduce((best, r) => r.len > best.len ? r : best, { start: 0, len: 0 })
+    nDias = bestRun.len
+    datas = dateMatches.slice(bestRun.start, bestRun.start + nDias).map(m => {
       const parts = m[0].trim().split(/\s+de\s+/i)
       return `${parts[0]}/${parts[1]?.slice(0, 3) || ''}`
     })
-    const lastDateMatch = dateMatches[dateMatches.length - 1]
-    blocoTelas = bloco.slice(lastDateMatch.index! + lastDateMatch[0].length)
+    const firstRunLastMatch = dateMatches[bestRun.start + nDias - 1]
+    // blocoTelas começa após o primeiro cabeçalho de datas (captura todas as páginas)
+    blocoTelas = bloco.slice(firstRunLastMatch.index! + firstRunLastMatch[0].length)
+    // Remove cabeçalhos de datas repetidos das páginas seguintes
+    blocoTelas = blocoTelas.replace(/(?:\d{1,2}\s+de\s+(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\s*){5,}/gi, ' ')
   } else {
     // Formato mensal: colunas por mês (ex: "março   abril")
     const monthRegex = /\b(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/gi
