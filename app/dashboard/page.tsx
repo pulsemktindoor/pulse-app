@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User, CheckCheck, MapPin } from 'lucide-react'
-import { format, differenceInDays, parseISO, startOfMonth, startOfDay, addMonths, subMonths, getDate, getDaysInMonth } from 'date-fns'
+import { format, differenceInDays, parseISO, startOfMonth, startOfDay, subMonths, getDate } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -41,7 +41,7 @@ export default function Dashboard() {
   const [locais, setLocais] = useState<LocalSimples[]>([])
   const [tvCorporativa, setTvCorporativa] = useState<{ valor_mensal: number }[]>([])
   const [relatoriosPendentes, setRelatoriosPendentes] = useState<RelatorioComCliente[]>([])
-  const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; parceiro_id: string | null; local_id: string | null; mes_referencia: string; created_at: string }[]>([])
+  const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; parceiro_id: string | null; local_id: string | null; mes_referencia: string; enviado: boolean; created_at: string }[]>([])
   const [loading, setLoading] = useState(true)
 
   const hoje = startOfDay(new Date())
@@ -59,7 +59,7 @@ export default function Dashboard() {
         .from('relatorios')
         .select('id, mes_referencia, enviado, cliente_id, clientes(nome_empresa, nome_responsavel, whatsapp)')
         .eq('enviado', false),
-      supabase.from('relatorios').select('id, cliente_id, parceiro_id, local_id, mes_referencia, created_at'),
+      supabase.from('relatorios').select('id, cliente_id, parceiro_id, local_id, mes_referencia, enviado, created_at'),
     ])
 
     const { data: tvData } = await supabase.from('tv_corporativa').select('valor_mensal')
@@ -143,6 +143,7 @@ export default function Dashboard() {
     const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.local_id !== l.id) return false
+      if (!r.enviado) return false
       if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
       return new Date(r.created_at) >= cutoff
     })
@@ -155,15 +156,13 @@ export default function Dashboard() {
     const iniciou = c.data_inicio_contrato
       ? parseISO(c.data_inicio_contrato)
       : new Date(c.created_at)
-    if (iniciou >= mesAtualInicio) {
-      const fimMesAtual = addMonths(mesAtualInicio, 1)
-      if (!c.data_fim_contrato || parseISO(c.data_fim_contrato) >= fimMesAtual) return false
-    }
+    if (iniciou >= mesAtualInicio && getDate(iniciou) > (c.dia_envio_relatorio ?? 0)) return false
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
     const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.cliente_id !== c.id) return false
+      if (!r.enviado) return false
       if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
       return new Date(r.created_at) >= cutoff
     })
@@ -177,6 +176,7 @@ export default function Dashboard() {
     const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.parceiro_id !== p.id) return false
+      if (!r.enviado) return false
       if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
       return new Date(r.created_at) >= cutoff
     })
