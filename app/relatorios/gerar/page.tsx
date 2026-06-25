@@ -432,7 +432,10 @@ export default function GerarRelatorioPage() {
       const oa = ORDEM_TELAS[a.nome] ?? 99
       const ob = ORDEM_TELAS[b.nome] ?? 99
       if (oa !== ob) return oa - ob
-      return a.nome.localeCompare(b.nome, 'pt-BR', { numeric: true })
+      const na = parseInt(a.nome.match(/\d+$/)?.[0] ?? '')
+      const nb = parseInt(b.nome.match(/\d+$/)?.[0] ?? '')
+      if (!isNaN(na) && !isNaN(nb)) return na - nb
+      return a.nome.localeCompare(b.nome, 'pt-BR')
     })
     return { ...resultado, telasDados }
   }
