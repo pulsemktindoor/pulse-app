@@ -9,6 +9,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, AlertTriangle, Check, Clock, F
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isToday, addMonths, subMonths, differenceInDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 type Parceiro = {
   id: string
@@ -43,6 +44,7 @@ type ItemLateral = {
 }
 
 export default function CalendarioPage() {
+  const router = useRouter()
   const [mesAtual, setMesAtual] = useState(new Date())
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [parceiros, setParceiros] = useState<Parceiro[]>([])
@@ -50,7 +52,7 @@ export default function CalendarioPage() {
   const [relatorios, setRelatorios] = useState<Relatorio[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, [mesAtual])
 
   async function loadData() {
     const [{ data: cliData }, { data: parData }, { data: relData }] = await Promise.all([
@@ -336,10 +338,12 @@ export default function CalendarioPage() {
                   const d = dia.getDate()
                   const evs = eventos[d] || []
                   const hoje = isToday(dia)
+                  const temRelatorio = evs.some(e => e.tipo === 'relatorio')
                   return (
                     <div
                       key={d}
-                      className={`min-h-[56px] rounded-lg p-1 ${hoje ? 'bg-blue-500/10 ring-1 ring-blue-400/30' : 'hover:bg-white/[0.04]'}`}
+                      onClick={() => temRelatorio && router.push('/relatorios/gerar')}
+                      className={`min-h-[56px] rounded-lg p-1 ${hoje ? 'bg-blue-500/10 ring-1 ring-blue-400/30' : 'hover:bg-white/[0.04]'} ${temRelatorio ? 'cursor-pointer' : ''}`}
                     >
                       <p className={`text-xs font-medium text-right mb-1 ${hoje ? 'text-blue-400' : 'text-zinc-500'}`}>
                         {d}

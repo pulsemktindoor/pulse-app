@@ -57,10 +57,15 @@ function ClienteCard({
         <p className="text-sm text-zinc-500">{c.nome_responsavel}</p>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="flex items-center gap-2 text-sm text-zinc-400">
+        <a
+          href={`https://wa.me/55${c.whatsapp.replace(/\D/g, '')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-green-400 transition-colors"
+        >
           <Phone className="w-3.5 h-3.5 text-zinc-500" />
           {c.whatsapp}
-        </div>
+        </a>
         {c.locais?.length > 0 && (
           <div className="flex items-start gap-2">
             <Monitor className="w-3.5 h-3.5 text-zinc-500 mt-0.5 shrink-0" />

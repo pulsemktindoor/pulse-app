@@ -6,7 +6,7 @@ import { Cliente } from '@/lib/supabase/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User, CheckCheck, MapPin } from 'lucide-react'
+import { Users, FileText, Bell, DollarSign, AlertTriangle, Clock, Send, CalendarCheck, Handshake, User, CheckCheck, MapPin, Monitor } from 'lucide-react'
 import { format, differenceInDays, parseISO, startOfMonth, startOfDay, subMonths, getDate } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [parceiros, setParceiros] = useState<ParceiroSimples[]>([])
   const [locais, setLocais] = useState<LocalSimples[]>([])
   const [tvCorporativa, setTvCorporativa] = useState<{ valor_mensal: number }[]>([])
+  const [totalTelas, setTotalTelas] = useState(0)
   const [relatoriosPendentes, setRelatoriosPendentes] = useState<RelatorioComCliente[]>([])
   const [relatoriosRecentes, setRelatoriosRecentes] = useState<{ id: string; cliente_id: string | null; parceiro_id: string | null; local_id: string | null; mes_referencia: string; enviado: boolean; created_at: string }[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,6 +65,8 @@ export default function Dashboard() {
 
     const { data: tvData } = await supabase.from('tv_corporativa').select('valor_mensal')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { count: telasCount } = await (supabase as any).from('telas').select('id', { count: 'exact', head: true }).eq('ativo', true)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: locaisData } = await (supabase as any)
       .from('locais')
       .select('id, nome_local, dia_envio_relatorio, data_fim_contrato')
@@ -74,6 +77,7 @@ export default function Dashboard() {
     if (parData) setParceiros(parData)
     if (locaisData) setLocais(locaisData as LocalSimples[])
     if (tvData) setTvCorporativa(tvData)
+    if (telasCount !== null) setTotalTelas(telasCount)
     if (relPendentes) setRelatoriosPendentes(relPendentes as RelatorioComCliente[])
     if (todosRels) setRelatoriosRecentes(todosRels)
     setLoading(false)
@@ -385,7 +389,7 @@ export default function Dashboard() {
       })()}
 
       {/* Cards de resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -395,6 +399,20 @@ export default function Dashboard() {
               </div>
               <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
                 <Users className="w-6 h-6 text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-500">Telas ativas</p>
+                <p className="text-3xl font-bold text-zinc-100 mt-1">{totalTelas}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                <Monitor className="w-6 h-6 text-purple-400" />
               </div>
             </div>
           </CardContent>
