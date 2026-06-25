@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { format, startOfMonth, subMonths } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 // Ordem fixa de exibição das telas no relatório
 const ORDEM_TELAS: Record<string, number> = {
@@ -67,10 +68,16 @@ function mesclarRelatorios(a: DadosRelatorio, b: DadosRelatorio): DadosRelatorio
   const telasDados = [...telasMap.values()].sort(
     (x, y) => (ORDEM_TELAS[x.nome] ?? 99) - (ORDEM_TELAS[y.nome] ?? 99)
   )
-  const totaisDiarios = a.totaisDiarios.map((v, i) => v + (b.totaisDiarios[i] || 0))
+  // Usa o array mais longo como base para não perder dias quando os PDFs têm períodos diferentes
+  const [longerDaily, shorterDaily] = a.totaisDiarios.length >= b.totaisDiarios.length
+    ? [a.totaisDiarios, b.totaisDiarios]
+    : [b.totaisDiarios, a.totaisDiarios]
+  const totaisDiarios = longerDaily.map((v, i) => v + (shorterDaily[i] || 0))
+  const datas = a.datas.length >= b.datas.length ? a.datas : b.datas
+  const nDias = Math.max(a.nDias, b.nDias)
   const totalPeriodo = a.totalPeriodo + b.totalPeriodo
-  const mediaDiaria = a.nDias > 0 ? Math.round(totalPeriodo / a.nDias) : 0
-  return { ...a, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
+  const mediaDiaria = nDias > 0 ? Math.round(totalPeriodo / nDias) : 0
+  return { ...a, datas, nDias, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
 }
 
 async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
@@ -185,21 +192,32 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
     }
   }
 
+  // Inferir o rowSize real a partir do comprimento mais comum das linhas nomeadas.
+  // Isso corrige casos onde nDias é contado a mais (ex: datas do cabeçalho "de 26/mai a 25/jun"
+  // são incluídas na contagem junto com as colunas da tabela).
+  const namedLens = rows.filter(r => r.nome !== '').map(r => r.nums.length)
+  const lenFreq = new Map<number, number>()
+  for (const l of namedLens) lenFreq.set(l, (lenFreq.get(l) || 0) + 1)
+  const inferredRowSize = namedLens.length > 0
+    ? [...lenFreq.entries()].sort((a, b) => b[1] - a[1])[0][0]
+    : rowSize
+  // Se encontrou linhas de dados, usa o tamanho real delas; senão mantém nDias original
+  const inferredNDias = namedLens.length > 0 ? inferredRowSize - 1 : nDias
+
   // Linhas com nome = telas; linha sem nome = totais
-  // Filtra ruído do rodapé/cabeçalho do PDF (ex: "1 / 2", datas) que gera segmentos com poucos números
-  const telaRows = rows.filter(r => r.nome !== '' && r.nums.length === rowSize)
+  const telaRows = rows.filter(r => r.nome !== '' && r.nums.length === inferredRowSize)
   const totalsRow = rows.find(r => r.nome === '')
 
   const telasDados: TelaDado[] = telaRows
     .map(r => ({
       nome: nomeLimpoTela(r.nome),
       total: r.nums[r.nums.length - 1] || 0,
-      dailyValues: r.nums.slice(0, nDias),
+      dailyValues: r.nums.slice(0, inferredNDias),
     }))
     .sort((a, b) => (ORDEM_TELAS[a.nome] ?? 99) - (ORDEM_TELAS[b.nome] ?? 99))
 
   const totaisDiarios = totalsRow
-    ? totalsRow.nums.slice(0, nDias)
+    ? totalsRow.nums.slice(0, inferredNDias)
     : telasDados.reduce(
         (acc, t) => t.dailyValues.map((v, i) => (acc[i] || 0) + v),
         [] as number[]
@@ -207,9 +225,12 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
   const totalPeriodo = totalsRow
     ? totalsRow.nums[totalsRow.nums.length - 1] || 0
     : telasDados.reduce((a, t) => a + t.total, 0)
-  const mediaDiaria = nDias > 0 ? Math.round(totalPeriodo / nDias) : 0
+  const mediaDiaria = inferredNDias > 0 ? Math.round(totalPeriodo / inferredNDias) : 0
 
-  return { cliente, periodoLabel, dataGeracao, datas, nDias, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
+  // Ajustar datas para bater com inferredNDias caso nDias tenha sido contado a mais
+  const adjustedDatas = inferredNDias < datas.length ? datas.slice(datas.length - inferredNDias) : datas
+
+  return { cliente, periodoLabel, dataGeracao, datas: adjustedDatas, nDias: inferredNDias, telasDados, totaisDiarios, totalPeriodo, mediaDiaria }
 }
 
 const CORES = ['#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626']
@@ -270,6 +291,7 @@ export default function GerarRelatorioPage() {
   const [pdfCount, setPdfCount] = useState(0)
   const [editandoTelaIdx, setEditandoTelaIdx] = useState<number | null>(null)
   const [mapeamentoAplicado, setMapeamentoAplicado] = useState(false)
+  const [mesRefSelecionado, setMesRefSelecionado] = useState(() => format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd'))
   const inputRef = useRef<HTMLInputElement>(null)
   const extraInputRef = useRef<HTMLInputElement>(null)
 
@@ -402,7 +424,7 @@ export default function GerarRelatorioPage() {
     if (!vinculo) { toast.error('Selecione o destino antes de salvar'); return }
     if (!dados) return
     setSalvando(true)
-    const mesRef = format(startOfMonth(subMonths(new Date(), 1)), 'yyyy-MM-dd')
+    const mesRef = mesRefSelecionado
     const isParceiro = vinculo.startsWith('parceiro:')
     const isLocal = vinculo.startsWith('local:')
     const parceiroId = isParceiro ? vinculo.replace('parceiro:', '') : null
@@ -573,6 +595,25 @@ export default function GerarRelatorioPage() {
             <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl px-4 py-4 space-y-3">
               <div className="flex items-end gap-3">
                 <div className="flex-1 space-y-1">
+                  <Label className="text-xs">Mês de referência</Label>
+                  <Select value={mesRefSelecionado} onValueChange={setMesRefSelecionado}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 6 }, (_, i) => {
+                        const mes = startOfMonth(subMonths(new Date(), i))
+                        return (
+                          <SelectItem key={i} value={format(mes, 'yyyy-MM-dd')}>
+                            {format(mes, 'MMMM/yyyy', { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())}
+                            {i === 1 && ' (mês anterior)'}
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 space-y-1">
                   <Label className="text-xs">Vincular este relatório a</Label>
                   <Select onValueChange={handleVinculoChange}>
                     <SelectTrigger>
@@ -612,15 +653,16 @@ export default function GerarRelatorioPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button
-                  onClick={salvarRelatorio}
-                  disabled={salvando}
-                  variant="outline"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {salvando ? 'Salvando...' : 'Salvar no sistema'}
-                </Button>
               </div>
+              <Button
+                onClick={salvarRelatorio}
+                disabled={salvando}
+                variant="outline"
+                className="w-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {salvando ? 'Salvando...' : 'Salvar no sistema'}
+              </Button>
             </div>
           </div>
         )}
