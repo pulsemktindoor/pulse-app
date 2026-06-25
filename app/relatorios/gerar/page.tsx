@@ -155,8 +155,8 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
     blocoTelas = bloco.slice(firstRunLastMatch.index! + firstRunLastMatch[0].length)
     // Remove cabeçalhos de datas repetidos das páginas seguintes
     blocoTelas = blocoTelas.replace(/(?:\d{1,2}\s+de\s+(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\s*){5,}/gi, ' ')
-    // Remove cabeçalho repetido de página (ex: "Relatório de Exibições: ... 25/06/2026 17:03")
-    blocoTelas = blocoTelas.replace(/Relat[oó]rio\s+de\s+Exibi[\s\S]*?\d{1,2}:\d{2}/gi, ' ')
+    // Remove cabeçalho repetido de página (ex: "Relatório de Exibições: ... 17:03 2 / 2")
+    blocoTelas = blocoTelas.replace(/Relat[oó]rio\s+de\s+Exibi[\s\S]*?\d{1,2}:\d{2}(?:\s+\d+\s*\/\s*\d+)?/gi, ' ')
   } else {
     // Formato mensal: colunas por mês (ex: "março   abril")
     const monthRegex = /\b(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/gi
