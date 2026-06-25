@@ -310,6 +310,7 @@ export default function GerarRelatorioPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [parceiros, setParceiros] = useState<{ id: string; nome_local: string }[]>([])
   const [locaisLista, setLocaisLista] = useState<{ id: string; nome_local: string }[]>([])
+  const [mapaTelaGlobal, setMapaTelaGlobal] = useState<Map<string, string>>(new Map())
   const [vinculo, setVinculo] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [pdfCount, setPdfCount] = useState(0)
@@ -401,13 +402,37 @@ export default function GerarRelatorioPage() {
       supabase.from('parceiros').select('id, nome_local').order('nome_local'),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from('locais').select('id, nome_local').eq('ativo', true).order('nome_local'),
-    ]).then(([{ data: cliData }, { data: parData }, { data: locData }]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).from('telas').select('nome, identificacao').eq('ativo', true),
+    ]).then(([{ data: cliData }, { data: parData }, { data: locData }, { data: telasData }]) => {
       if (cliData) setClientes(cliData as Cliente[])
       if (parData) setParceiros(parData)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (locData) setLocaisLista((locData as any[]).map((l: any) => ({ id: l.id, nome_local: l.nome_local })))
+      if (telasData) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapa = new Map<string, string>((telasData as any[])
+          .filter((t: any) => t.identificacao)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((t: any) => [t.identificacao.toLowerCase(), t.nome]))
+        setMapaTelaGlobal(mapa)
+      }
     })
   }, [])
+
+  function aplicarMapaTelas(resultado: DadosRelatorio): DadosRelatorio {
+    if (mapaTelaGlobal.size === 0) return resultado
+    return {
+      ...resultado,
+      telasDados: resultado.telasDados.map(tela => {
+        const nomeLower = tela.nome.toLowerCase()
+        for (const [identificacao, nomeDisplay] of mapaTelaGlobal) {
+          if (nomeLower.includes(identificacao)) return { ...tela, nome: nomeDisplay }
+        }
+        return tela
+      }),
+    }
+  }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -417,7 +442,7 @@ export default function GerarRelatorioPage() {
     setDados(null)
     setPdfCount(0)
     try {
-      const resultado = await parsePdfCliente(file)
+      const resultado = aplicarMapaTelas(await parsePdfCliente(file))
       setDados(resultado)
       setPdfCount(1)
     } catch (err) {
@@ -433,7 +458,7 @@ export default function GerarRelatorioPage() {
     setLoadingExtra(true)
     setErro('')
     try {
-      const resultado = await parsePdfCliente(file)
+      const resultado = aplicarMapaTelas(await parsePdfCliente(file))
       setDados(prev => prev ? mesclarRelatorios(prev, resultado) : resultado)
       setPdfCount(prev => prev + 1)
     } catch (err) {
