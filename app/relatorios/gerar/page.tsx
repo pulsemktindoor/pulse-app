@@ -422,16 +422,19 @@ export default function GerarRelatorioPage() {
 
   function aplicarMapaTelas(resultado: DadosRelatorio): DadosRelatorio {
     if (mapaTelaGlobal.size === 0) return resultado
-    return {
-      ...resultado,
-      telasDados: resultado.telasDados.map(tela => {
-        const nomeLower = tela.nome.toLowerCase()
-        for (const [identificacao, nomeDisplay] of mapaTelaGlobal) {
-          if (nomeLower.includes(identificacao)) return { ...tela, nome: nomeDisplay }
-        }
-        return tela
-      }),
-    }
+    const telasDados = resultado.telasDados.map(tela => {
+      const nomeLower = tela.nome.toLowerCase()
+      for (const [identificacao, nomeDisplay] of mapaTelaGlobal) {
+        if (nomeLower.includes(identificacao)) return { ...tela, nome: nomeDisplay }
+      }
+      return tela
+    }).sort((a, b) => {
+      const oa = ORDEM_TELAS[a.nome] ?? 99
+      const ob = ORDEM_TELAS[b.nome] ?? 99
+      if (oa !== ob) return oa - ob
+      return a.nome.localeCompare(b.nome, 'pt-BR', { numeric: true })
+    })
+    return { ...resultado, telasDados }
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
