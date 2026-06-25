@@ -19,9 +19,6 @@ const ORDEM_TELAS: Record<string, number> = {
   'Quality Body 1':      3,
   'Quality Body 2':      4,
   'SB Carnes':           5,
-  "Don'Ana 1":           6,
-  "Don'Ana 2":           7,
-  "Don'Ana 3":           8,
 }
 
 // Mapeia nome bruto do PDF → nome limpo para o relatório do cliente
@@ -32,9 +29,6 @@ function nomeLimpoTela(nomePdf: string): string {
   if (n.includes('camarote'))                        return "Bistrô Pai D'égua 2"
   if (n.includes('mesas'))                           return "Bistrô Pai D'égua 1"
   if (n.includes('sb') || n.includes('carnes'))      return 'SB Carnes'
-  if (n.includes('coluna'))                          return "Don'Ana 1"
-  if (n.includes('buffet'))                          return "Don'Ana 2"
-  if (n.includes('fundo'))                           return "Don'Ana 3"
   return nomePdf
 }
 
