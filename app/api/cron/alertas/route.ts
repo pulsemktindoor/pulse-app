@@ -56,19 +56,18 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: erros }, { status: 500 })
     }
 
-    // 1. Contratos/parcerias vencendo nos próximos 30 dias ou já vencidos
+    // 1. Contratos/parcerias vencendo nos próximos 7 dias (até o dia do vencimento)
     const todosContratos = [
       ...(clientes || []).filter(c => c.data_fim_contrato).map(c => ({ nome: c.nome_empresa, dias: differenceInDays(parseISO(c.data_fim_contrato!), hoje) })),
       ...(parceiros || []).filter(p => p.data_fim_contrato).map(p => ({ nome: p.nome_local, dias: differenceInDays(parseISO(p.data_fim_contrato!), hoje) })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...((locais as any[]) || []).filter((l: any) => l.data_fim_contrato).map((l: any) => ({ nome: l.nome_local, dias: differenceInDays(parseISO(l.data_fim_contrato), hoje) })),
-    ].filter(c => c.dias <= 30).sort((a, b) => a.dias - b.dias)
+    ].filter(c => c.dias >= 0 && c.dias <= 7).sort((a, b) => a.dias - b.dias)
 
     if (todosContratos.length > 0) {
       const linhas = todosContratos.map(c => {
-        if (c.dias < 0) return `🔴 ${c.nome} — vencido há ${Math.abs(c.dias)}d`
         if (c.dias === 0) return `🔴 ${c.nome} — vence HOJE`
-        if (c.dias <= 7) return `🟠 ${c.nome} — vence em ${c.dias}d`
+        if (c.dias === 1) return `🟠 ${c.nome} — vence AMANHÃ`
         return `🟡 ${c.nome} — vence em ${c.dias}d`
       })
       secoes.push(`⚠️ <b>CONTRATOS/PARCERIAS</b>\n${linhas.join('\n')}`)
