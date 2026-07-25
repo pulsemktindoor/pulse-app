@@ -11,12 +11,16 @@ const supabase = createClient(
 async function sendTelegram(message: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN
   const chatId = process.env.TELEGRAM_CHAT_ID
-  if (!token || !chatId) return
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  if (!token || !chatId) throw new Error('TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID não configurados')
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
   })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Telegram API erro ${res.status}: ${body}`)
+  }
 }
 
 export async function GET(req: Request) {
@@ -30,6 +34,7 @@ export async function GET(req: Request) {
     const diaHoje = getDate(hoje)
     const mesAtualInicio = startOfMonth(hoje)
     const cutoff = subMonths(mesAtualInicio, 1)
+    const cutoffStr = format(cutoff, 'yyyy-MM-dd')
     const secoes: string[] = []
 
     // Buscar tudo igual ao dashboard
@@ -81,8 +86,8 @@ export async function GET(req: Request) {
       const jaTemRelatorio = (todosRels || []).some(r => {
         if (r.local_id !== l.id) return false
         if (!r.enviado) return false
-        if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
-        return new Date(r.created_at) >= cutoff
+        if (r.mes_referencia) return r.mes_referencia >= cutoffStr
+        return new Date(r.created_at) >= new Date(cutoffStr)
       })
       return !jaTemRelatorio
     })
@@ -96,8 +101,8 @@ export async function GET(req: Request) {
       const jaTemRelatorio = (todosRels || []).some(r => {
         if (r.cliente_id !== c.id) return false
         if (!r.enviado) return false
-        if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
-        return new Date(r.created_at) >= cutoff
+        if (r.mes_referencia) return r.mes_referencia >= cutoffStr
+        return new Date(r.created_at) >= new Date(cutoffStr)
       })
       return !jaTemRelatorio
     })
@@ -109,38 +114,40 @@ export async function GET(req: Request) {
       const jaTemRelatorio = (todosRels || []).some(r => {
         if (r.parceiro_id !== p.id) return false
         if (!r.enviado) return false
-        if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
-        return new Date(r.created_at) >= cutoff
+        if (r.mes_referencia) return r.mes_referencia >= cutoffStr
+        return new Date(r.created_at) >= new Date(cutoffStr)
       })
       return !jaTemRelatorio
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const relHoje = [
-      ...clientesComRelatorio.map(c => c.nome_empresa),
+    const relPendentes = [
+      ...clientesComRelatorio.map(c => ({ nome: c.nome_empresa, atraso: diaHoje - (c.dia_envio_relatorio ?? diaHoje) })),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...locaisComRelatorio.map((l: any) => l.nome_local),
-      ...parceirosComRelatorio.map(p => p.nome_local),
-    ]
+      ...locaisComRelatorio.map((l: any) => ({ nome: l.nome_local, atraso: diaHoje - (l.dia_envio_relatorio ?? diaHoje) })),
+      ...parceirosComRelatorio.map(p => ({ nome: p.nome_local, atraso: diaHoje - (p.dia_envio_relatorio ?? diaHoje) })),
+    ].sort((a, b) => b.atraso - a.atraso)
 
-    if (relHoje.length > 0) {
-      const linhas = relHoje.map(nome => `• ${nome}`)
-      secoes.push(`📋 <b>RELATÓRIOS — ENVIAR HOJE</b>\n${linhas.join('\n')}`)
-    }
-
-    if (secoes.length === 0) {
-      return NextResponse.json({ ok: true, message: 'Sem alertas hoje' })
+    if (relPendentes.length > 0) {
+      const linhas = relPendentes.map(r => {
+        if (r.atraso === 0) return `• ${r.nome} — enviar hoje`
+        if (r.atraso === 1) return `🔴 ${r.nome} — 1 dia atrasado`
+        return `🔴 ${r.nome} — ${r.atraso} dias atrasado`
+      })
+      secoes.push(`📋 <b>RELATÓRIOS PENDENTES</b>\n${linhas.join('\n')}`)
     }
 
     const dataFormatada = format(hoje, "EEEE, dd 'de' MMMM", { locale: ptBR })
     const dataLabel = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1)
 
+    const corpo = secoes.length > 0
+      ? `━━━━━━━━━━━━━━━━━━\n${secoes.join('\n\n━━━━━━━━━━━━━━━━━━\n')}`
+      : `✅ Tudo em dia — sem contratos vencendo nem relatórios pendentes.`
+
     const mensagem = [
       `🔔 <b>Pulse • Alertas de hoje</b>`,
       `📅 ${dataLabel}`,
       ``,
-      `━━━━━━━━━━━━━━━━━━`,
-      secoes.join('\n\n━━━━━━━━━━━━━━━━━━\n'),
+      corpo,
     ].join('\n')
 
     await sendTelegram(mensagem)
@@ -148,7 +155,7 @@ export async function GET(req: Request) {
 
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    await sendTelegram(`⚠️ <b>Pulse • Erro crítico no cron</b>\n\n${msg}`)
+    try { await sendTelegram(`⚠️ <b>Pulse • Erro crítico no cron</b>\n\n${msg}`) } catch { /* ignora falha secundária do Telegram */ }
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

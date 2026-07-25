@@ -141,15 +141,16 @@ export default function Dashboard() {
 
   const mesAtualInicio = startOfMonth(hoje)
 
+  const cutoffStr = format(subMonths(mesAtualInicio, 1), 'yyyy-MM-dd')
+
   const locaisComRelatorioHoje = locais.filter((l) => {
     if (!l.dia_envio_relatorio) return false
     if (diaHoje < l.dia_envio_relatorio) return false
-    const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.local_id !== l.id) return false
       if (!r.enviado) return false
-      if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
-      return new Date(r.created_at) >= cutoff
+      if (r.mes_referencia) return r.mes_referencia >= cutoffStr
+      return new Date(r.created_at) >= new Date(cutoffStr)
     })
     return !jaTemRelatorio
   })
@@ -163,12 +164,11 @@ export default function Dashboard() {
     if (iniciou >= mesAtualInicio && getDate(iniciou) > (c.dia_envio_relatorio ?? 0)) return false
     const diaEnvio = c.dia_envio_relatorio
     if (diaHoje < diaEnvio) return false
-    const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.cliente_id !== c.id) return false
       if (!r.enviado) return false
-      if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
-      return new Date(r.created_at) >= cutoff
+      if (r.mes_referencia) return r.mes_referencia >= cutoffStr
+      return new Date(r.created_at) >= new Date(cutoffStr)
     })
     return !jaTemRelatorio
   })
@@ -177,12 +177,11 @@ export default function Dashboard() {
     if (!p.dia_envio_relatorio) return false
     if (p.data_fim_contrato && differenceInDays(parseISO(p.data_fim_contrato), hoje) < 0) return false
     if (diaHoje < p.dia_envio_relatorio) return false
-    const cutoff = subMonths(mesAtualInicio, 1)
     const jaTemRelatorio = relatoriosRecentes.some((r) => {
       if (r.parceiro_id !== p.id) return false
       if (!r.enviado) return false
-      if (r.mes_referencia) return parseISO(r.mes_referencia) >= cutoff
-      return new Date(r.created_at) >= cutoff
+      if (r.mes_referencia) return r.mes_referencia >= cutoffStr
+      return new Date(r.created_at) >= new Date(cutoffStr)
     })
     return !jaTemRelatorio
   })
