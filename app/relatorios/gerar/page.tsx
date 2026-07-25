@@ -18,7 +18,7 @@ const ORDEM_TELAS: Record<string, number> = {
   "Bistrô Pai D'égua 2": 2,
   'Quality Body 1':      3,
   'Quality Body 2':      4,
-  'SB Carnes':           5,
+  'SB Carnes':           100,
 }
 
 // Mapeia nome bruto do PDF → nome limpo para o relatório do cliente
