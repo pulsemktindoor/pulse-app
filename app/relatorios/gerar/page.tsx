@@ -259,6 +259,43 @@ async function parsePdfCliente(file: File): Promise<DadosRelatorio> {
 
 const CORES = ['#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626']
 
+// Cores fixas por família de local (independe da ordem em que as telas aparecem no PDF)
+const CORES_FIXAS: [string, string][] = [
+  ["bistrô", '#7c3aed'],     // roxo
+  ['quality body', '#d97706'], // laranja
+  ['sb carnes', '#059669'],  // verde
+  ["dona'ana", '#2563eb'],   // azul
+]
+
+// Agrupa telas da mesma família (ex: "Quality Body 1" e "Quality Body 2") para usar a mesma cor
+function nomeGrupoTela(nome: string): string {
+  return nome.replace(/\s*\d+\s*$/, '').trim() || nome
+}
+
+// Cor de uma tela: usa a cor fixa da família se reconhecida, senão cicla pela paleta padrão
+function corDaTela(nome: string, corPorGrupoDinamico: Map<string, string>): string {
+  const nomeLower = nome.toLowerCase()
+  const fixa = CORES_FIXAS.find(([chave]) => nomeLower.includes(chave))
+  if (fixa) return fixa[1]
+  const grupo = nomeGrupoTela(nome)
+  if (!corPorGrupoDinamico.has(grupo)) {
+    corPorGrupoDinamico.set(grupo, CORES[corPorGrupoDinamico.size % CORES.length])
+  }
+  return corPorGrupoDinamico.get(grupo)!
+}
+
+function dataBrParaIso(dataBr: string): string {
+  const [d, m, y] = dataBr.split('/')
+  if (!d || !m || !y) return ''
+  return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+}
+
+function dataIsoParaBr(dataIso: string): string {
+  const [y, m, d] = dataIso.split('-')
+  if (!d || !m || !y) return ''
+  return `${d}/${m}/${y}`
+}
+
 // Gráfico SVG puro — escala 100% via viewBox, funciona perfeitamente no PDF
 function GraficoBarras({ data }: { data: Array<{ dia: string; exibicoes: number }> }) {
   const W = 560, H = 160
@@ -523,6 +560,9 @@ export default function GerarRelatorioPage() {
   const primeiroComDados = dadosGraficoCompleto.findIndex(d => d.exibicoes > 0)
   const dadosGrafico = primeiroComDados > 0 ? dadosGraficoCompleto.slice(primeiroComDados) : dadosGraficoCompleto
 
+  // Uma cor por família de tela (Bistrô=roxo, Quality Body=laranja, SB Carnes=verde, Dona'Ana=azul; demais ciclam a paleta)
+  const corPorGrupoDinamico = new Map<string, string>()
+
   return (
     <>
       <div className="p-8 print:hidden">
@@ -583,7 +623,7 @@ export default function GerarRelatorioPage() {
                     window.onafterprint = () => { document.title = titulo }
                     window.print()
                   }}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 touch-manipulation"
                 >
                   <Printer className="w-4 h-4 mr-2" />
                   Imprimir / Baixar PDF
@@ -595,14 +635,25 @@ export default function GerarRelatorioPage() {
             <div className="bg-white/[0.03] border border-white/[0.10] rounded-xl px-4 py-4 space-y-4">
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Editar dados do relatório</p>
 
-              {/* Nome do cliente */}
-              <div className="space-y-1">
-                <Label className="text-xs">Nome exibido no relatório</Label>
-                <Input
-                  value={dados.cliente}
-                  onChange={(e) => setDados(prev => prev ? { ...prev, cliente: e.target.value } : prev)}
-                  className="h-8 text-sm"
-                />
+              {/* Nome do cliente + data de geração */}
+              <div className="flex gap-3">
+                <div className="flex-1 space-y-1">
+                  <Label className="text-xs">Nome exibido no relatório</Label>
+                  <Input
+                    value={dados.cliente}
+                    onChange={(e) => setDados(prev => prev ? { ...prev, cliente: e.target.value } : prev)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="w-40 space-y-1">
+                  <Label className="text-xs">Gerado em (data no site da Pulse)</Label>
+                  <Input
+                    type="date"
+                    value={dataBrParaIso(dados.dataGeracao)}
+                    onChange={(e) => setDados(prev => prev ? { ...prev, dataGeracao: dataIsoParaBr(e.target.value) } : prev)}
+                    className="h-8 text-sm"
+                  />
+                </div>
               </div>
 
               {/* Telas */}
@@ -803,30 +854,33 @@ export default function GerarRelatorioPage() {
                   Exibições por tela — {dados.periodoLabel}
                 </h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
-                  {dados.telasDados.filter(t => t.total > 0).map((tela, i) => (
+                  {dados.telasDados.filter(t => t.total > 0).map((tela) => {
+                    const cor = corDaTela(tela.nome, corPorGrupoDinamico)
+                    return (
                     <div
                       key={tela.nome}
                       style={{
                         background: 'white',
                         border: '1px solid #e5e7eb',
-                        borderLeft: `4px solid ${CORES[i % CORES.length]}`,
+                        borderLeft: `4px solid ${cor}`,
                         borderRadius: 10,
                         padding: '12px 16px',
                         opacity: tela.total === 0 ? 0.5 : 1,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                        <Monitor style={{ width: 12, height: 12, color: CORES[i % CORES.length] }} />
+                        <Monitor style={{ width: 12, height: 12, color: cor }} />
                         <p style={{ margin: 0, fontSize: 10, color: '#6b7280', lineHeight: 1.3 }}>
                           {tela.nome}
                         </p>
                       </div>
-                      <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: CORES[i % CORES.length] }}>
+                      <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: cor }}>
                         {tela.total.toLocaleString('pt-BR')}
                       </p>
                       <p style={{ margin: 0, fontSize: 10, color: '#9ca3af' }}>exibições</p>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -851,9 +905,10 @@ export default function GerarRelatorioPage() {
 
       <style jsx global>{`
         @media print {
+          html, body { background: white !important; }
           body * { visibility: hidden; }
           #relatorio, #relatorio * { visibility: visible; }
-          #relatorio { position: absolute; top: 0; left: 0; width: 100%; }
+          #relatorio { position: absolute; top: 0; left: 0; width: 100%; background: white; }
           @page { margin: 0; size: A4; }
         }
       `}</style>
