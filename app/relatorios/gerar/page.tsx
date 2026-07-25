@@ -376,10 +376,22 @@ export default function GerarRelatorioPage() {
   function editarExibicoes(idx: number, novoTotal: number) {
     setDados(prev => {
       if (!prev) return prev
-      const telasDados = prev.telasDados.map((t, i) => i === idx ? { ...t, total: novoTotal } : t)
+      const telaAntiga = prev.telasDados[idx]
+      const totalAntigo = telaAntiga.total
+      // Escala os valores diários proporcionalmente ao novo total, para manter o gráfico consistente
+      const fator = totalAntigo > 0 ? novoTotal / totalAntigo : 0
+      const novosDailyValues = totalAntigo > 0
+        ? telaAntiga.dailyValues.map(v => Math.round(v * fator))
+        : telaAntiga.dailyValues
+      const telasDados = prev.telasDados.map((t, i) =>
+        i === idx ? { ...t, total: novoTotal, dailyValues: novosDailyValues } : t
+      )
       const totalPeriodo = telasDados.reduce((a, t) => a + t.total, 0)
       const mediaDiaria = prev.nDias > 0 ? Math.round(totalPeriodo / prev.nDias) : 0
-      return { ...prev, telasDados, totalPeriodo, mediaDiaria }
+      const totaisDiarios = prev.totaisDiarios.map((_, di) =>
+        telasDados.reduce((a, t) => a + (t.dailyValues[di] || 0), 0)
+      )
+      return { ...prev, telasDados, totalPeriodo, mediaDiaria, totaisDiarios }
     })
   }
 
